@@ -1,10 +1,14 @@
 package ca.yorku.cirillom.ensemble.ui;
 
+import ca.yorku.cirillom.ensemble.models.PerformanceData;
 import ca.yorku.cirillom.ensemble.ui.panels.InputPanel;
+import ca.yorku.cirillom.ensemble.ui.panels.ModelPanel;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /**
  * User: Marco
@@ -12,7 +16,7 @@ import java.awt.event.WindowListener;
  * Date: 2/9/14 8:22 PM.
  * Main application window
  */
-public class MainWindow {
+public class MainWindow implements PropertyChangeListener {
 
     /**
      * Window title.
@@ -20,6 +24,8 @@ public class MainWindow {
     public static final String TITLE = "Ensemble Model Solver";
 
     private JFrame frame;
+    private InputPanel inputPanel;
+    private ModelPanel modelPanel;
 
     public MainWindow() {
         init();
@@ -28,13 +34,19 @@ public class MainWindow {
     private void init() {
         // Initialize Window
         frame = new JFrame(TITLE);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         // Create supporting panels
         JPanel centerPanel = new JPanel();
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
-        centerPanel.add(new InputPanel(this));
-        //centerPanel.add(new ModelPanel());
+
+        inputPanel = new InputPanel(this);
+        inputPanel.addPropertyChangeListener(this);
+        centerPanel.add(inputPanel);
+
+        modelPanel = new ModelPanel(this);
+        modelPanel.addPropertyChangeListener(this);
+        centerPanel.add(modelPanel);
 
         // Add panels to the JFrame's contentPane
         Container c = frame.getContentPane();
@@ -48,5 +60,14 @@ public class MainWindow {
 
     public void addWindowListener(WindowListener l) {
         frame.addWindowListener(l);
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent event) {
+        if ("finished" == event.getPropertyName()) {
+            java.util.List<PerformanceData> result = inputPanel.getData();
+            modelPanel.setData(result);
+            modelPanel.setEnabled(true);
+        }
     }
 }

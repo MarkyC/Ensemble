@@ -26,6 +26,15 @@ public class PerformanceData {
         this.metrics = metrics;
     }
 
+
+    public String getProcess() {
+        return process;
+    }
+
+    public Set<String> getMetrics() {
+        return metrics.keySet();
+    }
+
     public boolean has(String metric) {
         return metrics.containsKey(metric);
     }

@@ -1,5 +1,6 @@
 package ca.yorku.cirillom.ensemble.ui.panels;
 
+import ca.yorku.cirillom.ensemble.models.PerformanceData;
 import ca.yorku.cirillom.ensemble.ui.MainWindow;
 import ca.yorku.cirillom.ensemble.ui.util.ProgressWindow;
 import ca.yorku.cirillom.ensemble.util.InputFileFilter;
@@ -9,7 +10,10 @@ import ca.yorku.cirillom.ensemble.util.Util;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.List;
 
 /**
  * User: Marco
@@ -25,8 +29,9 @@ public class InputPanel extends JPanel {
     public static final String BROWSE_FILE = "Browse...";
     public static final String NO_FILE = "No File Selected";
     private final MainWindow parent;
+    List<PerformanceData> data;
 
-    public InputPanel(MainWindow parent) {
+    public InputPanel(final MainWindow parent) {
         super();
         this.parent = parent;
         this.setBorder(Util.createBorder(TITLE));
@@ -49,6 +54,9 @@ public class InputPanel extends JPanel {
                         case "tsv":
 
                             TSVParser p = new TSVParser(file, new ProgressWindow());
+
+                            InputPanel.this.addPropertyChangeListener(InputPanel.this.parent);
+                            p.addPropertyChangeListener(new PerfChange(p));
                             p.execute();
 
                             /*// TODO: We have performance data, plug it into the Modellers
@@ -72,5 +80,24 @@ public class InputPanel extends JPanel {
 
         this.add(fileLabel);
         this.add(openFile);
+    }
+
+    class PerfChange implements PropertyChangeListener {
+
+        private final TSVParser parser;
+
+        public PerfChange(TSVParser parser) { this.parser = parser; }
+        @Override
+        public void propertyChange(final PropertyChangeEvent event) {
+
+            if ("finished" == event.getPropertyName()) {
+                data = parser.getResult();
+                InputPanel.this.firePropertyChange("finished", false, true);
+            }
+        }
+    }
+
+    public List<PerformanceData> getData() {
+        return this.data;
     }
 }

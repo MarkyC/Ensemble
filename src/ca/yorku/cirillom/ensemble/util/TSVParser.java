@@ -25,10 +25,11 @@ import java.util.*;
  * <p/>
  * Created with IntelliJ IDEA.
  */
-public class TSVParser extends SwingWorker<List<PerformanceData>, Integer> {
+public class TSVParser extends SwingWorker<Boolean, Integer>  {
 
     private final File file;
     private final ProgressWindow progress;
+    private List<PerformanceData> list;
 
     public TSVParser(File file, ProgressWindow progress) {
         super();
@@ -43,7 +44,7 @@ public class TSVParser extends SwingWorker<List<PerformanceData>, Integer> {
         }
     }
 
-    protected List<PerformanceData> doInBackground() throws InterruptedException {
+    protected Boolean doInBackground() throws InterruptedException {
 
         // Get current line number and total line numbers so we can update the progress
         int currentLine  = 0;
@@ -96,16 +97,18 @@ public class TSVParser extends SwingWorker<List<PerformanceData>, Integer> {
         }
 
         // Create List for return
-        List<PerformanceData> result = new ArrayList<>();
+        this.list = new ArrayList<>();
         for (Map.Entry<String, PerformanceData> p : perfData.entrySet()) {
-           result.add(p.getValue());
-            System.out.println(p);
+           list.add(p.getValue());
         }
+
+        this.firePropertyChange("finished", null, true);
 
         // close ProgressWindow
         progress.dispose();
 
-        return result;
+        return true;
+        //return result;
     }
 
     /**
@@ -134,6 +137,10 @@ public class TSVParser extends SwingWorker<List<PerformanceData>, Integer> {
         }
 
         return result;
+    }
+
+    public List<PerformanceData> getResult() {
+        return this.list;
     }
 
     /**

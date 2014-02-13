@@ -23,8 +23,9 @@ public class Preferences {
      */
     public static final String MODELS = "models";
 
-    // Default loaded models
-    private static final String DEFAULT_MODELS = "moving-average";
+    public static final String MOVING_AVERAGE = "moving-average";
+
+    private static final String DEFAULT_MODELS = MOVING_AVERAGE;
 
     // Encapsulated Properties class
     private Properties prop = new Properties();
