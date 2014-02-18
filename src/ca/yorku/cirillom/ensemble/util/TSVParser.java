@@ -72,8 +72,15 @@ public class TSVParser extends SwingWorker<Boolean, Integer>  {
                 String[] elems = Util.replace(line.split("\t"), "\"", "");  // split and remove quotes
 
                 // parse Date
-                DateFormat format = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss.SSS");
-                Date time = format.parse(elems[0]);
+                Date time;
+                try {
+                    DateFormat format = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss.SSS");
+                    time = format.parse(elems[0]);
+                } catch (ParseException pex) {
+                    DateFormat format = new SimpleDateFormat("HH:mm.S");
+                    time = format.parse(elems[0]);
+                }
+
 
                 // Parse DataValues
                 for (int i = 1; i < elems.length; i++) {

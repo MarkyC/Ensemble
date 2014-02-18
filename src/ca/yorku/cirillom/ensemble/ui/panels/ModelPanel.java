@@ -1,6 +1,8 @@
 package ca.yorku.cirillom.ensemble.ui.panels;
 
-import ca.yorku.cirillom.ensemble.models.EnsembleModel;
+import ca.yorku.cirillom.ensemble.models.IEnsembleModel;
+import ca.yorku.cirillom.ensemble.models.ModelEnsemble;
+import ca.yorku.cirillom.ensemble.models.ModelResult;
 import ca.yorku.cirillom.ensemble.models.PerformanceData;
 import ca.yorku.cirillom.ensemble.preferences.Preferences;
 import ca.yorku.cirillom.ensemble.ui.MainWindow;
@@ -9,6 +11,8 @@ import ca.yorku.cirillom.ensemble.util.Util;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 
 /**
@@ -39,7 +43,33 @@ public class ModelPanel extends JPanel {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                new EnsembleModel(data).start();
+
+                for (final PerformanceData d : data) {
+                    for (final String metric : d.getMetrics()) {
+                        ModelEnsemble ensemble = new ModelEnsemble(d.get(metric));
+                        ensemble.addPropertyChangeListener(new PropertyChangeListener() {
+
+                            @Override
+                            public void propertyChange(PropertyChangeEvent evt) {
+
+                                IEnsembleModel model = (IEnsembleModel) evt.getNewValue();
+                                ModelPanel.this.firePropertyChange("result", null, new ModelResult(
+                                        d.getProcess(),
+                                        metric,
+                                        model.getLastValue(),
+                                        model.getLastResult(),
+                                        model.getAccuracy()
+                                ));
+                                /*System.out.println(
+                                        d.getProcess() + " " + metric + ": (" +
+                                                model.getLastValue() + ", " +
+                                                model.getLastResult() + ", " +
+                                                model.getAccuracy() + ")");*/
+                            }
+                        });
+                        ensemble.start();
+                    }
+                }
             }
         });
 

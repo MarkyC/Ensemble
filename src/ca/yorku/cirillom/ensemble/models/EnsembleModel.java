@@ -7,6 +7,8 @@ import java.util.*;
  * Email: cirillom@yorku.ca
  * Date: 2/12/14 1:40 PM.
  */
+
+@Deprecated
 public class EnsembleModel extends Thread {
 
     private final List<PerformanceData> data;

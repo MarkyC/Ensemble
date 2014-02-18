@@ -1,8 +1,10 @@
 package ca.yorku.cirillom.ensemble.ui;
 
+import ca.yorku.cirillom.ensemble.models.ModelResult;
 import ca.yorku.cirillom.ensemble.models.PerformanceData;
 import ca.yorku.cirillom.ensemble.ui.panels.InputPanel;
 import ca.yorku.cirillom.ensemble.ui.panels.ModelPanel;
+import ca.yorku.cirillom.ensemble.ui.panels.ResultPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,6 +28,7 @@ public class MainWindow implements PropertyChangeListener {
     private JFrame frame;
     private InputPanel inputPanel;
     private ModelPanel modelPanel;
+    private ResultPanel resultPanel;
 
     public MainWindow() {
         init();
@@ -48,6 +51,10 @@ public class MainWindow implements PropertyChangeListener {
         modelPanel.addPropertyChangeListener(this);
         centerPanel.add(modelPanel);
 
+        resultPanel = new ResultPanel(this);
+        resultPanel.addPropertyChangeListener(this);
+        centerPanel.add(resultPanel);
+
         // Add panels to the JFrame's contentPane
         Container c = frame.getContentPane();
         c.add(centerPanel, BorderLayout.CENTER);
@@ -64,10 +71,12 @@ public class MainWindow implements PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent event) {
-        if ("finished" == event.getPropertyName()) {
+        if ("finished".equalsIgnoreCase(event.getPropertyName())) {
             java.util.List<PerformanceData> result = inputPanel.getData();
             modelPanel.setData(result);
             modelPanel.setEnabled(true);
+        } else if ("result".equalsIgnoreCase(event.getPropertyName()) ) {
+            resultPanel.updateResult((ModelResult) event.getNewValue());
         }
     }
 }
