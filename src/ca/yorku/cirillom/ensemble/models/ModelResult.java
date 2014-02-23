@@ -17,14 +17,14 @@ public class ModelResult {
     private String metric;
     private double actualValue;
     private double computedValue;
-    private double accuracy;
+    private double errorPercent;
 
-    public ModelResult(String process, String metric, double actualValue, double computedValue, double accuracy) {
+    public ModelResult(String process, String metric, double actualValue, double computedValue, double errorPercent) {
         this.process = process;
         this.metric = metric;
         this.actualValue = actualValue;
         this.computedValue = computedValue;
-        this.accuracy = accuracy;
+        this.errorPercent = errorPercent;
     }
 
     public String getProcess() {
@@ -43,7 +43,7 @@ public class ModelResult {
         return computedValue;
     }
 
-    public double getAccuracy() {
-        return accuracy;
+    public double getErrorPercent() {
+        return errorPercent;
     }
 }

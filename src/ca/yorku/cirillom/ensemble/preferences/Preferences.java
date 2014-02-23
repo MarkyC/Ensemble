@@ -1,8 +1,7 @@
 package ca.yorku.cirillom.ensemble.preferences;
 
 import java.io.*;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * User: Marco
@@ -21,7 +20,8 @@ public class Preferences {
     /**
      * Models preference field, controls which models are automatically loaded
      */
-    public static final String MODELS = "models";
+    public static final String ALL_MODELS = "all-models";
+    public static final String ENABLED_MODELS = "enabled-models";
 
     public static final String MOVING_AVERAGE = "moving-average";
 
@@ -46,8 +46,13 @@ public class Preferences {
         }
 
         // Check that default models are set
-        if (!prop.containsKey(MODELS)) {
-            put(MODELS, DEFAULT_MODELS);
+        if (!prop.containsKey(ALL_MODELS)) {
+            put(ALL_MODELS, DEFAULT_MODELS);
+        }
+
+        // Check that default models are enabled
+        if (!prop.containsKey(ENABLED_MODELS)) {
+            put(ENABLED_MODELS, DEFAULT_MODELS);
         }
     }
 
@@ -71,7 +76,7 @@ public class Preferences {
      * Create a Properties file
      */
     private void create() {
-        put(MODELS, DEFAULT_MODELS);
+        put(ALL_MODELS, DEFAULT_MODELS);
 
         save();
     }
@@ -89,12 +94,19 @@ public class Preferences {
         }
     }
 
+    public String append(String key, String value) {
+        Set<String> values = getAsSet(key);
+        values.add(value);
+        return put(key, values.toArray(new String[1]));
+    }
+
     /**
      * Adds/Updates a Preference item
      * @param key - Key
      * @param value - Value
      */
-    public String put(String key, String value) {
+    public synchronized String put(String key, String value) {
+        System.out.println("put: " + key + " " + value);
         return (String) prop.put(key, value);
     }
 
@@ -103,27 +115,47 @@ public class Preferences {
      * @param key - Key
      * @param values - Values as a List
      */
-    public String put(String key, List<String> values) {
-
-        // Don't insert empty list
-        if (0 == values.size()) return null;
-
+    public String put(String key, Set<String> values) {
         String value = "";
         for (String v : values) {
             value += v + ", ";
         }
-        value = value.substring(0, value.length() - 2); // get rid of last comma and space
+
+        // get rid of last comma and space
+        if (value.length() > 2) value = value.substring(0, value.length() - 2);
 
         return put(key, value);
     }
+
+    /**
+     * Adds/Updates a Preference item
+     * @param key - Key
+     * @param values - Values as a List
+     */
+    public String put(String key, String[] values) {
+        Set<String> newVals = new HashSet<>();
+        for(String val : values) {
+            if (null != val) newVals.add(val.trim());
+        }
+        return put(key, newVals);
+    }
+
 
     /**
      * Fetches a Preference Item
      * @param key - Key
      * @return Value associated with key, or null if no such value exists
      */
-    public String get(String key) {
+    public synchronized String get(String key) {
         return prop.get(key).toString();
+    }
+
+    public List<String> getAsList(String key) {
+        return Arrays.asList(get(key).split(","));
+    }
+
+    public Set<String> getAsSet(String key) {
+        return new HashSet<>(getAsList(key));
     }
 
     /**
@@ -131,8 +163,22 @@ public class Preferences {
      * @param key - Key
      * @return The removed value
      */
-    public String remove(String key) {
+    public synchronized String remove(String key) {
         return (String) prop.remove(key);
+    }
+
+    /**
+     * Removes a value from a Preference Item
+     * e.g., If models = one,two,three and I call removeFromKey(models, two),
+     * I am left with models = one, three
+     * @param key
+     * @param value
+     * @return
+     */
+    public synchronized String removeFromKey(String key, String value) {
+        Set<String> values = getAsSet(key);
+        values.remove(value);
+        return put(key, values.toArray(new String[1]));
     }
 
     /**
@@ -140,7 +186,7 @@ public class Preferences {
      * @param key - The key to search for
      * @return true if found, false otherwise
      */
-    public boolean has(String key) {
+    public synchronized boolean has(String key) {
         return prop.containsKey(key);
     }
 }

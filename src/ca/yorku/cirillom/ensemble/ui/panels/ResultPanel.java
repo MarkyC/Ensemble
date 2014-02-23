@@ -56,7 +56,7 @@ public class ResultPanel extends JPanel {
                     (m.getValueAt(i, 1).equals(result.getMetric())) ) {
                 m.setValueAt(result.getActualValue(),   i, 2);
                 m.setValueAt(result.getComputedValue(), i, 3);
-                m.setValueAt(result.getAccuracy(),      i, 4);
+                m.setValueAt(result.getErrorPercent() + "%",      i, 4);
                 found = true;
             }
         }
@@ -67,7 +67,7 @@ public class ResultPanel extends JPanel {
                     result.getMetric(),
                     result.getActualValue(),
                     result.getComputedValue(),
-                    result.getAccuracy()});
+                    result.getErrorPercent()+"%"});
         }
     }
 }

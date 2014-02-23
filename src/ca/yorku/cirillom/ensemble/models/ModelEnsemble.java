@@ -15,34 +15,85 @@ public class ModelEnsemble extends Thread  {
 
     private final List<DataValue> data;
 
-    private Map<String, IEnsembleModel> models;
-    private Map<String, IEnsembleModel> ensemble;
-    private List<PropertyChangeListener> listeners;
+    private Map<String, IEnsembleModel> models = new HashMap<>();
+    public void addModel(String name) throws ClassNotFoundException {
+        if (availableModels.containsKey(name)) {
+            models.put(name, availableModels.get(name));
+        } else {
+            throw new ClassNotFoundException("Model for " + name + " not found.");
+        }
+    }
 
-    public ModelEnsemble(List<DataValue> data) {
-        this.data = data;
+    private Map<String, IEnsembleModel> ensemble = new HashMap<>();
+    public void addModelToEnsemble(String name) throws ClassNotFoundException {
+        if (availableModels.containsKey(name)) {
+            ensemble.put(name, availableModels.get(name));
+        } else {
+            throw new ClassNotFoundException("Model for " + name + " not found.");
+        }
+    }
 
-        models   = new HashMap<>();
-        ensemble = new HashMap<>();
-        listeners= new ArrayList<>();
+    private List<PropertyChangeListener> listeners = new ArrayList<>();
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        this.listeners.add(listener);
+    }
+    public void notifyListeners(String propertyName, IEnsembleModel model) {
+        for (PropertyChangeListener p : listeners) {
+            p.propertyChange(new PropertyChangeEvent(this, "moving-average", null, model));
+        }
+    }
+
+    /**
+     * List of Models this ModelEnsemble Supports
+     */
+    public static final Map<String, IEnsembleModel> availableModels = new HashMap<>();
+    static {
+        availableModels.put(Preferences.MOVING_AVERAGE, new MovingAverageModel());
+    }
+
+    public ModelEnsemble() throws ClassNotFoundException {
+        this(new ArrayList<DataValue>());
+    }
+
+    public ModelEnsemble(List<DataValue> data) throws ClassNotFoundException {
+
+        // Initialize with the availableModels and the passed input
+        this(data, availableModels.keySet().toArray(new String[1]));
+    }
+
+    public ModelEnsemble(List<DataValue> data, String[] models) throws ClassNotFoundException {
+        this.data = data;//new ArrayList<>(data);
+        for ( String model : models ) {
+            addModel(model);
+        }
+
+    }
+
+    @Override
+    public void start() {
+        if (1 > this.data.size()) {
+            throw new IllegalStateException("Cannot start the ModelEnsemble without adding input. Use addData()");
+        } else {
+            super.start();
+        }
     }
 
     @Override
     public void run() {
 
         int offset = 0;
-
+/*
         // populate models from Preferences
-        for ( String model : Preferences.getInstance().get(Preferences.MODELS).split(",") ) {
+        for ( String model : Preferences.getInstance().get(Preferences.ALL_MODELS).split(",") ) {
             switch (model) {
                 case Preferences.MOVING_AVERAGE:
                     System.out.println("putting");
                     models.put(model, new MovingAverageModel());
                 break;
             }
-        }
+        }*/
 
-        MovingAverageModel theModel = new MovingAverageModel();
+        //MovingAverageModel theModel = new MovingAverageModel();
 
         // loop until interrupted
         while (!this.isInterrupted()) {
@@ -56,23 +107,28 @@ public class ModelEnsemble extends Thread  {
 
             if (offset > data.size() - 1) {
 
-                // we've exhausted the input data, close the model solver
-                System.out.println("Input data exhausted, ending ensemble");
+                // we've exhausted the input input, close the model solver
+                System.out.println("Input input exhausted, ending ensemble");
                 this.interrupt();
 
             } else {
 
-                // get the latest data value
+                // get the latest input value
                 DataValue value = data.get(offset);
 
-                theModel.add(value);
-                theModel.model();
-                this.notifyListeners(theModel);
+                for (Map.Entry<String, IEnsembleModel> entry : models.entrySet()) {
+                    String name         = entry.getKey();
+                    IEnsembleModel model= entry.getValue();
+
+                    model.addInput(value);
+                    model.model();
+                    this.notifyListeners(name, model);
+                }
 
 /*
-                // add DataValue to all models
-                for (String modeller : models.keySet())     models.get(modeller).add(value);
-                for (String modeller : ensemble.keySet())   ensemble.get(modeller).add(value);
+                // addInput DataValue to all models
+                for (String modeller : models.keySet())     models.get(modeller).addInput(value);
+                for (String modeller : ensemble.keySet())   ensemble.get(modeller).addInput(value);
 
 
                 // compute next value for all models
@@ -83,7 +139,7 @@ public class ModelEnsemble extends Thread  {
                 for (String modeller : models.keySet())     this.notifyListeners(models.get(modeller));
                 for (String modeller : ensemble.keySet())   this.notifyListeners(ensemble.get(modeller));
 
-                // If accuracy for any model is higher than all in the ensemble, add to ensemble
+                // If accuracy for any model is higher than all in the ensemble, addInput to ensemble
                 for (Iterator<Map.Entry<String, IEnsembleModel>> iterator = models.entrySet().iterator(); iterator.hasNext(); ) {
 
                     Map.Entry<String, IEnsembleModel> entry = iterator.next();
@@ -93,7 +149,7 @@ public class ModelEnsemble extends Thread  {
                     boolean addToEnsemble   = true;
 
                     for (IEnsembleModel e : ensemble.values()) {
-                        if (model.getAccuracy() < e.getAccuracy() ) {
+                        if (model.getError() < e.getError() ) {
                             addToEnsemble = false;
                         }
                     }
@@ -102,20 +158,10 @@ public class ModelEnsemble extends Thread  {
                         ensemble.put(metric, model);
                         iterator.remove();
                     }
-                } // End add to ensemble if accuracy is higher
+                } // End addInput to ensemble if accuracy is higher
 */
             }
             ++offset; // increment offset for next iteration
         } // end while
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        this.listeners.add(listener);
-    }
-
-    public void notifyListeners(IEnsembleModel model) {
-        for (PropertyChangeListener p : listeners) {
-            p.propertyChange(new PropertyChangeEvent(this, "moving-average", null, model));
-        }
     }
 }

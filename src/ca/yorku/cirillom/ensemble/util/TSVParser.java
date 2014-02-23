@@ -92,7 +92,7 @@ public class TSVParser extends SwingWorker<Boolean, Integer>  {
                     } catch (NumberFormatException e) { }
 
                     PerformanceData p = perfData.get(processes.get(i-1));   // i-1 because processes is 0-indexed
-                    p.add(metrics.get(i-1), new DataValue(value, time));    // add the value
+                    p.add(metrics.get(i-1), new DataValue(value, time));    // addInput the value
                 }
 
                 // Increment progress

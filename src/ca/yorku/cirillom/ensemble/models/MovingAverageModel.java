@@ -1,6 +1,7 @@
 package ca.yorku.cirillom.ensemble.models;
 
 import java.util.ArrayDeque;
+import java.util.List;
 
 /**
  * User: Marco
@@ -15,14 +16,60 @@ import java.util.ArrayDeque;
  */
 public class MovingAverageModel implements IEnsembleModel {
 
-    private final int window;
+    /* Constants */
+    public static final int DEFAULT_WINDOW = 10;
 
-    private double result = 0;
-    private double lastResult = 0;
+    /* Fields and Accessors */
 
-    private static final int DEFAULT_WINDOW = 10;
+    private int window;
+    public int getWindow() {
+        return window;
+    }
+    public void setWindow(int window) {
+        this.window = window;
+    }
 
-    ArrayDeque<DataValue> data;
+    private double nextPrediction = 0;
+    @Override public double getNextPrediction() {
+        return nextPrediction;
+    }
+    private void setNextPrediction(double result) {
+        this.lastPrediction = this.nextPrediction;
+        this.nextPrediction = result;
+    }
+
+    private double lastPrediction = 0;
+    @Override public double getLastPrediction() {
+        return lastPrediction;
+    }
+
+
+    private ArrayDeque<DataValue> input;
+    @Override
+    public void addInput(DataValue input) {
+        this.input.addLast(input);
+
+        this.maintainWindow();
+    }
+    @Override
+    public void addInput(List<DataValue> input) {
+        for (DataValue v : input) {
+            this.addInput(v);
+        }
+    }
+    public ArrayDeque<DataValue> getInput() {
+        return input;
+    }
+    @Override
+    public DataValue getLastInput() throws NullPointerException{
+        if ( 0 == input.size() ) {
+            throw new NullPointerException("No Last Input");
+        }
+
+        return input.peekLast();
+    }
+
+    /* Constructor */
 
     public MovingAverageModel() {
         this(DEFAULT_WINDOW);
@@ -30,81 +77,57 @@ public class MovingAverageModel implements IEnsembleModel {
 
     public MovingAverageModel(int window) {
         this.window = window;
-        data = new ArrayDeque<>();
+        input = new ArrayDeque<>();
     }
 
-    @Override
-    public void add(DataValue value) {
+    /* Functions */
 
-        System.out.println(this + " adding:" + value.getValue());
-        while (data.size() >= window) {
-            data.pop();
+    private void maintainWindow() {
+        while (this.input.size() > window) {
+            this.input.pop();
         }
-
-        data.addLast(value);
     }
 
     @Override
     public double model() {
         double sum = 0;
 
-        for (DataValue value : data) {
+        for (DataValue value : input.clone()) {
             sum += value.getValue();
         }
 
-        setResult(sum / ((double) data.size()));
+        setNextPrediction(sum / ((double) input.size()));
 
-        System.out.println(data.size() + " " + window);
+       /* System.out.println(input.size() + " " + window);
 
-        if (data.size() == window) {
+        if (input.size() == window) {
 
-            String output = "";
-            for (DataValue value : data) {
-                output += value.getValue() + "\n";
+            String nextPrediction = "";
+            for (DataValue value : input) {
+                nextPrediction += value.getValue() + "\n";
             }
 
-            output += "lastValue: " + getLastValue() + "\n";
-            output += "lastResult: " + getLastResult() +"\n";
-            output += "accuracy: " + getAccuracy()+"\n";
+            nextPrediction += "lastValue: " + getLastInput() + "\n";
+            nextPrediction += "lastPrediction: " + getLastPrediction() +"\n";
+            nextPrediction += "accuracy: " + getError()+"\n";
 
-            System.out.println(output);
+            System.out.println(nextPrediction);
 
             System.exit(0);
-        }
+        }*/
 
-        return getResult();
-    }
-
-    private void setResult(double result) {
-        this.lastResult = this.result;
-        this.result = result;
+        return getNextPrediction();
     }
 
     @Override
-    public double getResult() {
-        return result;
-    }
+    public double getError() {
+        // the last added value
+        double lastInput = getLastInput().getValue();
 
-    @Override
-    public double getLastResult() {
-        return lastResult;
-    }
+        // We haven't predicted a value yet, or prevent divide by 0
+        if (0 == lastInput) return 0;//(Math.abs(lastInput - getLastPrediction()));
 
-    @Override
-    public double getLastValue() {
-        if ( 0 == data.size() ) return 0;
-
-        return data.pollLast().getValue();
-    }
-
-    @Override
-    public double getAccuracy() {
-
-        // Actual Value is the last added value
-        double actualValue = getLastValue();
-
-        if (0 == actualValue) return (Math.abs(actualValue - this.lastResult));
-
-        return (Math.abs(actualValue - this.lastResult) / actualValue);
+        // return percentage error, lower is more accurate
+        return Math.abs(getLastPrediction() - lastInput) / lastInput;
     }
 }

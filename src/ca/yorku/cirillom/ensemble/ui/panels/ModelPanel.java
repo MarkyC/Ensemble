@@ -1,18 +1,17 @@
 package ca.yorku.cirillom.ensemble.ui.panels;
 
-import ca.yorku.cirillom.ensemble.models.IEnsembleModel;
-import ca.yorku.cirillom.ensemble.models.ModelEnsemble;
-import ca.yorku.cirillom.ensemble.models.ModelResult;
-import ca.yorku.cirillom.ensemble.models.PerformanceData;
+import ca.yorku.cirillom.ensemble.models.*;
 import ca.yorku.cirillom.ensemble.preferences.Preferences;
 import ca.yorku.cirillom.ensemble.ui.MainWindow;
 import ca.yorku.cirillom.ensemble.util.Util;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -34,7 +33,7 @@ public class ModelPanel extends JPanel {
     public ModelPanel(final MainWindow parent) {
         super();
         this.parent = parent;
-        //this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        this.setLayout(new BorderLayout ());
         this.setBorder(Util.createBorder(TITLE));
 
         startButton = new JButton(NO_FILE);
@@ -46,42 +45,81 @@ public class ModelPanel extends JPanel {
 
                 for (final PerformanceData d : data) {
                     for (final String metric : d.getMetrics()) {
-                        ModelEnsemble ensemble = new ModelEnsemble(d.get(metric));
-                        ensemble.addPropertyChangeListener(new PropertyChangeListener() {
+                        System.out.println("Creating model for metric: " + metric + "("+ d.get(metric).size() +")");
+                        for (Iterator<DataValue> it = d.get(metric).iterator(); it.hasNext();) {
+                            System.out.print(it.next().getValue() + " ");
+                        }
+                        System.out.println();
+                        ModelEnsemble ensemble = null;
+                        try {
+                            ensemble = new ModelEnsemble(new ArrayList<>(d.get(metric)));
 
-                            @Override
-                            public void propertyChange(PropertyChangeEvent evt) {
+                            ensemble.addPropertyChangeListener(new PropertyChangeListener() {
 
-                                IEnsembleModel model = (IEnsembleModel) evt.getNewValue();
-                                ModelPanel.this.firePropertyChange("result", null, new ModelResult(
-                                        d.getProcess(),
-                                        metric,
-                                        model.getLastValue(),
-                                        model.getLastResult(),
-                                        model.getAccuracy()
-                                ));
-                                /*System.out.println(
-                                        d.getProcess() + " " + metric + ": (" +
-                                                model.getLastValue() + ", " +
-                                                model.getLastResult() + ", " +
-                                                model.getAccuracy() + ")");*/
-                            }
-                        });
-                        ensemble.start();
+                                @Override
+                                public void propertyChange(PropertyChangeEvent evt) {
+
+                                    IEnsembleModel model = (IEnsembleModel) evt.getNewValue();
+                                    ModelPanel.this.firePropertyChange("result", null, new ModelResult(
+                                            d.getProcess(),
+                                            metric,
+                                            model.getLastInput().getValue(),
+                                            model.getLastPrediction(),
+                                            model.getError()
+                                    ));
+                                    /*System.out.println(
+                                            d.getProcess() + " " + metric + ": (" +
+                                                    model.getLastInput() + ", " +
+                                                    model.getLastPrediction() + ", " +
+                                                    model.getError() + ")");*/
+                                }
+                            });
+                            ensemble.start();
+                        } catch (ClassNotFoundException e1) {
+                            e1.printStackTrace();
+                        }
                     }
                 }
             }
         });
 
-        JCheckBox movingAverage = new JCheckBox("Moving Average");
-        movingAverage.setSelected(
-                Preferences.getInstance().get(Preferences.MODELS).contains(Preferences.MOVING_AVERAGE));
+        List<JCheckBox> checkboxes = new ArrayList<>();
+        for (String modelName : Preferences.getInstance().get(Preferences.ALL_MODELS).split(",")) {
+            final JCheckBox box = new JCheckBox(modelName);
 
-        //JPanel container = new JPanel();
-        //container.setLayout()
+            box.setName(modelName);
 
-        this.add(movingAverage);
-        this.add(startButton);
+            // Set selected if the model is in the list of enabled models
+            box.setSelected(Preferences.getInstance()
+                    .get(Preferences.ENABLED_MODELS)
+                    .contains(modelName));
+
+            box.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+
+                    if (((JCheckBox) e.getSource()).isSelected()) {
+                        // Add to enabled model preference
+                        Preferences.getInstance().append(Preferences.ENABLED_MODELS, box.getName());
+                    } else {
+                        // remove from enabled model preference
+                        Preferences.getInstance().removeFromKey(Preferences.ENABLED_MODELS, box.getName());
+                    }
+
+                }
+            });
+
+            checkboxes.add(box);
+
+        }
+
+
+        JPanel container = new JPanel();
+        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+        for (JCheckBox box : checkboxes) container.add(box);
+        //container.add(movingAverage);
+        container.add(startButton);
+        this.add(container);
 
     }
 

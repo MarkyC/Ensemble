@@ -1,5 +1,7 @@
 package ca.yorku.cirillom.ensemble.models;
 
+import java.util.List;
+
 /**
  * User: Marco
  * Email: cirillom@yorku.ca
@@ -9,9 +11,21 @@ public interface IEnsembleModel {
 
     /**
      * Adds a DataValue into this Modeller
-     * @param data the DataValue to add
+     * @param input the DataValue to addInput
      */
-    public void add(DataValue data);
+    public void addInput(DataValue input);
+
+    /**
+     * Adds a List of DataValue's into this Modeller
+     * @param input the DataValue to addInput
+     */
+    public void addInput(List<DataValue> input);
+
+    /**
+     * Returns the latest added DataValue's value
+     * @return the latest added DataValue's value
+     */
+    public DataValue getLastInput() throws NullPointerException;
 
     /**
      * Runs this modeller on the set of all DataValues
@@ -23,24 +37,18 @@ public interface IEnsembleModel {
      * Returns the latest computed result
      * @return the latest computed result
      */
-    public double getResult();
+    public double getNextPrediction();
 
     /**
-     * Returns the second latest computed result. This is separate from getResult() because this result
-     * can be compared to gathered data to compute this modellers accuracy
+     * Returns the second latest computed result. This is separate from getNextPrediction() because this result
+     * can be compared to gathered input to compute this modellers accuracy
      * @return the second latest computed result
      */
-    public double getLastResult();
-
-    /**
-     * Returns the latest added DataValue's value
-     * @return the latest added DataValue's value
-     */
-    public double getLastValue();
+    public double getLastPrediction();
 
     /**
      * Returns the most recently computed accuracy
      * @return the most recently computed accuracy
      */
-    public double getAccuracy();
+    public double getError();
 }
