@@ -35,7 +35,7 @@ public class ResultPanel extends JPanel {
                 "Metric",
                 "Actual Value",
                 "Computed Value",
-                "Accuracy"};
+                "Error%"};
 
         table = new JTable(new DefaultTableModel(new Object[][]{}, columnNames));
 
@@ -46,6 +46,11 @@ public class ResultPanel extends JPanel {
 
     }
 
+    private String makePercent(double val) {
+        double hundred = val * 100;
+        return hundred + "%";
+    }
+
     public void updateResult(ModelResult result) {
         DefaultTableModel m = (DefaultTableModel) table.getModel();
 
@@ -54,10 +59,12 @@ public class ResultPanel extends JPanel {
         for (int i = 0; i < m.getRowCount(); i++) {
             if ( (m.getValueAt(i, 0).equals(result.getProcess())) &&
                     (m.getValueAt(i, 1).equals(result.getMetric())) ) {
-                m.setValueAt(result.getActualValue(),   i, 2);
-                m.setValueAt(result.getComputedValue(), i, 3);
-                m.setValueAt(result.getErrorPercent() + "%",      i, 4);
+
+                m.setValueAt(result.getActualValue(),               i, 2);
+                m.setValueAt(result.getComputedValue(),             i, 3);
+                m.setValueAt(makePercent(result.getErrorPercent()), i, 4); // multiply by 100 for percent
                 found = true;
+
             }
         }
 

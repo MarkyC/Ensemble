@@ -124,7 +124,10 @@ public class Preferences {
         // get rid of last comma and space
         if (value.length() > 2) value = value.substring(0, value.length() - 2);
 
-        return put(key, value);
+        // get rid of leading comma
+        if ( (value.length() > 0) && (value.charAt(0) == ',') ) value = value.substring(1);
+
+        return put(key, value.trim());
     }
 
     /**

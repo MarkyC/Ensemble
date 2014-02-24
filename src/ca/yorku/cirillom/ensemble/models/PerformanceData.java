@@ -31,8 +31,8 @@ public class PerformanceData {
         return process;
     }
 
-    public Set<String> getMetrics() {
-        return metrics.keySet();
+    public Map<String, List<DataValue>> getMetrics() {
+        return metrics;
     }
 
     public boolean has(String metric) {

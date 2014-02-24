@@ -34,22 +34,23 @@ public class MovingAverageModel implements IEnsembleModel {
         return nextPrediction;
     }
     private void setNextPrediction(double result) {
-        this.lastPrediction = this.nextPrediction;
+        setLastPrediction(this.nextPrediction);
         this.nextPrediction = result;
     }
 
     private double lastPrediction = 0;
-    @Override public double getLastPrediction() {
-        return lastPrediction;
-    }
+    @Override public double getLastPrediction() { return lastPrediction; }
+    public void setLastPrediction(double lastPrediction) { this.lastPrediction = lastPrediction; }
 
-
-    private ArrayDeque<DataValue> input;
+    private final ArrayDeque<DataValue> input;
     @Override
     public void addInput(DataValue input) {
-        this.input.addLast(input);
 
-        this.maintainWindow();
+        synchronized (this.input) {
+            this.input.addLast(input);
+            this.maintainWindow();
+        }
+
     }
     @Override
     public void addInput(List<DataValue> input) {
@@ -57,16 +58,18 @@ public class MovingAverageModel implements IEnsembleModel {
             this.addInput(v);
         }
     }
-    public ArrayDeque<DataValue> getInput() {
+    /*public ArrayDeque<DataValue> getInput() {
         return input;
-    }
+    }*/
     @Override
-    public DataValue getLastInput() throws NullPointerException{
-        if ( 0 == input.size() ) {
-            throw new NullPointerException("No Last Input");
-        }
+    public DataValue getLastInput() throws NullPointerException {
+        synchronized (input) {
+            if ( 0 == input.size() ) {
+                throw new NullPointerException("No Last Input");
+            }
 
-        return input.peekLast();
+            return input.peekLast();
+        }
     }
 
     /* Constructor */
@@ -83,7 +86,7 @@ public class MovingAverageModel implements IEnsembleModel {
     /* Functions */
 
     private void maintainWindow() {
-        while (this.input.size() > window) {
+        while (input.size() > window) {
             this.input.pop();
         }
     }
@@ -91,30 +94,17 @@ public class MovingAverageModel implements IEnsembleModel {
     @Override
     public double model() {
         double sum = 0;
+        int size = 0;
 
-        for (DataValue value : input.clone()) {
-            sum += value.getValue();
+        synchronized (input) {
+            for (DataValue value : input) {
+                sum += value.getValue();
+                size++;
+            }
         }
 
-        setNextPrediction(sum / ((double) input.size()));
+        setNextPrediction(sum / ((double) size));
 
-       /* System.out.println(input.size() + " " + window);
-
-        if (input.size() == window) {
-
-            String nextPrediction = "";
-            for (DataValue value : input) {
-                nextPrediction += value.getValue() + "\n";
-            }
-
-            nextPrediction += "lastValue: " + getLastInput() + "\n";
-            nextPrediction += "lastPrediction: " + getLastPrediction() +"\n";
-            nextPrediction += "accuracy: " + getError()+"\n";
-
-            System.out.println(nextPrediction);
-
-            System.exit(0);
-        }*/
 
         return getNextPrediction();
     }
@@ -122,12 +112,24 @@ public class MovingAverageModel implements IEnsembleModel {
     @Override
     public double getError() {
         // the last added value
-        double lastInput = getLastInput().getValue();
+        double lastInput        = getLastInput().getValue();
+        double lastPrediction   = getLastPrediction();
 
-        // We haven't predicted a value yet, or prevent divide by 0
-        if (0 == lastInput) return 0;//(Math.abs(lastInput - getLastPrediction()));
+        // prediction and input are both 0
+        if ( doubleEquals(0, lastInput) && doubleEquals(0, lastPrediction) ) {
+            return 0;
+        }
+
+        // prevent divide by 0
+        if ( doubleEquals(0, lastInput) ) {
+            return Double.POSITIVE_INFINITY;
+        }
 
         // return percentage error, lower is more accurate
-        return Math.abs(getLastPrediction() - lastInput) / lastInput;
+        return ( Math.abs(getLastPrediction() - lastInput) / lastInput );
+    }
+
+    private boolean doubleEquals(double a, double b) {
+        return (Math.abs(a-b) < 0.0001);
     }
 }

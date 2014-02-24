@@ -11,8 +11,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * User: Marco
@@ -23,10 +25,12 @@ import java.util.List;
 public class ModelPanel extends JPanel {
 
     public static final String TITLE = "Model Ensemble";
-
     public static final String NO_FILE = "Please select a file first";
+
     private final MainWindow parent;
-    List<PerformanceData> data;
+
+    private List<PerformanceData> data          = new ArrayList<>();
+    private final List<JCheckBox> checkboxes    = new ArrayList<>();
 
     private final JButton startButton;
 
@@ -43,16 +47,20 @@ public class ModelPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                for (final PerformanceData d : data) {
-                    for (final String metric : d.getMetrics()) {
-                        System.out.println("Creating model for metric: " + metric + "("+ d.get(metric).size() +")");
-                        for (Iterator<DataValue> it = d.get(metric).iterator(); it.hasNext();) {
-                            System.out.print(it.next().getValue() + " ");
-                        }
-                        System.out.println();
+                for (JCheckBox box : checkboxes) box.setEnabled(false);
+
+                for (Iterator<PerformanceData> performanceDataIterator = data.iterator(); performanceDataIterator.hasNext();) {
+
+                    final PerformanceData perfData = performanceDataIterator.next();
+
+                    for (Map.Entry<String, List<DataValue>> entry : perfData.getMetrics().entrySet()) {
+
+                        final String metric             = entry.getKey();
+                        final List<DataValue> values    = entry.getValue();
+
                         ModelEnsemble ensemble = null;
                         try {
-                            ensemble = new ModelEnsemble(new ArrayList<>(d.get(metric)));
+                            ensemble = new ModelEnsemble(values);
 
                             ensemble.addPropertyChangeListener(new PropertyChangeListener() {
 
@@ -60,18 +68,13 @@ public class ModelPanel extends JPanel {
                                 public void propertyChange(PropertyChangeEvent evt) {
 
                                     IEnsembleModel model = (IEnsembleModel) evt.getNewValue();
-                                    ModelPanel.this.firePropertyChange("result", null, new ModelResult(
-                                            d.getProcess(),
+                                    ModelPanel.this.firePropertyChange(evt.getPropertyName(), null, new ModelResult(
+                                            perfData.getProcess(),
                                             metric,
                                             model.getLastInput().getValue(),
                                             model.getLastPrediction(),
                                             model.getError()
                                     ));
-                                    /*System.out.println(
-                                            d.getProcess() + " " + metric + ": (" +
-                                                    model.getLastInput() + ", " +
-                                                    model.getLastPrediction() + ", " +
-                                                    model.getError() + ")");*/
                                 }
                             });
                             ensemble.start();
@@ -83,7 +86,6 @@ public class ModelPanel extends JPanel {
             }
         });
 
-        List<JCheckBox> checkboxes = new ArrayList<>();
         for (String modelName : Preferences.getInstance().get(Preferences.ALL_MODELS).split(",")) {
             final JCheckBox box = new JCheckBox(modelName);
 

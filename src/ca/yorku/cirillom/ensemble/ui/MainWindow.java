@@ -2,6 +2,7 @@ package ca.yorku.cirillom.ensemble.ui;
 
 import ca.yorku.cirillom.ensemble.models.ModelResult;
 import ca.yorku.cirillom.ensemble.models.PerformanceData;
+import ca.yorku.cirillom.ensemble.preferences.Preferences;
 import ca.yorku.cirillom.ensemble.ui.panels.InputPanel;
 import ca.yorku.cirillom.ensemble.ui.panels.ModelPanel;
 import ca.yorku.cirillom.ensemble.ui.panels.ResultPanel;
@@ -75,7 +76,7 @@ public class MainWindow implements PropertyChangeListener {
             java.util.List<PerformanceData> result = inputPanel.getData();
             modelPanel.setData(result);
             modelPanel.setEnabled(true);
-        } else if ("result".equalsIgnoreCase(event.getPropertyName()) ) {
+        } else if (Preferences.getInstance().getAsList(Preferences.ENABLED_MODELS).contains(event.getPropertyName()) ) {
             resultPanel.updateResult((ModelResult) event.getNewValue());
         }
     }

@@ -35,7 +35,7 @@ public class EnsembleModel extends Thread {
                 e.printStackTrace();
             }
 
-            for (PerformanceData d : data) {
+            /*for (PerformanceData d : data) {
                 for (String s : d.getMetrics()) {
 
 
@@ -48,18 +48,18 @@ public class EnsembleModel extends Thread {
                     }
 
                 }
-            }
+            }*/
 
             offset = j;
 
             // Print latest averages for each process
             //if (offset < listSize)
-            for (PerformanceData d : data) {
+            /*for (PerformanceData d : data) {
                 for (String s : d.getMetrics()) {
                     double avg = average(s);
                     System.out.println("["+offset+"]" + d.getProcess() + ": " + s + ": " + avg);
                 }
-            }
+            }*/
         }
     }
 

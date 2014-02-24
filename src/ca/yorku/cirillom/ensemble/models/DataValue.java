@@ -8,7 +8,7 @@ import java.util.Date;
  * Date: 2/9/14 11:12 PM.
  * A DataValue is a POJO that stores a performance monitoring value and the time it was collected
  */
-public class DataValue {
+public class DataValue implements Cloneable{
 
     private double value;
     private Date time;
@@ -40,5 +40,10 @@ public class DataValue {
                 "value=" + value +
                 ", time=" + time +
                 '}';
+    }
+
+    @Override
+    public DataValue clone() {
+        return new DataValue(getValue(), getTime());
     }
 }

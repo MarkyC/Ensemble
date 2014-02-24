@@ -39,7 +39,7 @@ public class ModelEnsemble extends Thread  {
     }
     public void notifyListeners(String propertyName, IEnsembleModel model) {
         for (PropertyChangeListener p : listeners) {
-            p.propertyChange(new PropertyChangeEvent(this, "moving-average", null, model));
+            p.propertyChange(new PropertyChangeEvent(this, propertyName, null, model));
         }
     }
 
@@ -99,22 +99,25 @@ public class ModelEnsemble extends Thread  {
         while (!this.isInterrupted()) {
 
             // cat nap
-            try {
+            /*try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            }
+            }*/
 
             if (offset > data.size() - 1) {
 
                 // we've exhausted the input input, close the model solver
-                System.out.println("Input input exhausted, ending ensemble");
+                System.out.println("Input exhausted, ending ensemble");
                 this.interrupt();
 
             } else {
 
                 // get the latest input value
-                DataValue value = data.get(offset);
+                DataValue value = data.get(offset).clone();
+                //System.out.println(value);
+
+                //models.
 
                 for (Map.Entry<String, IEnsembleModel> entry : models.entrySet()) {
                     String name         = entry.getKey();
