@@ -23,9 +23,10 @@ public class Preferences {
     public static final String ALL_MODELS = "all-models";
     public static final String ENABLED_MODELS = "enabled-models";
 
-    public static final String MOVING_AVERAGE = "moving-average";
+    public static final String MOVING_AVERAGE       = "moving-average";
+    public static final String LINEAR_REGRESSION    = "linear-regression";
 
-    private static final String DEFAULT_MODELS = MOVING_AVERAGE;
+    private static final String DEFAULT_MODELS = MOVING_AVERAGE + ", " + LINEAR_REGRESSION;
 
     // Encapsulated Properties class
     private Properties prop = new Properties();

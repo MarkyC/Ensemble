@@ -77,7 +77,7 @@ public class MainWindow implements PropertyChangeListener {
             modelPanel.setData(result);
             modelPanel.setEnabled(true);
         } else if (Preferences.getInstance().getAsList(Preferences.ENABLED_MODELS).contains(event.getPropertyName()) ) {
-            resultPanel.updateResult((ModelResult) event.getNewValue());
+            resultPanel.updateResult(event.getPropertyName(), (ModelResult) event.getNewValue());
         }
     }
 }

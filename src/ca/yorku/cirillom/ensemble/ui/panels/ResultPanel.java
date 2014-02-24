@@ -23,7 +23,8 @@ public class ResultPanel extends JPanel {
     private final MainWindow parent;
     List<PerformanceData> data;
 
-    JTable table;
+    JTabbedPane tabs = new JTabbedPane();
+    JTable table/* = new JTable()*/;
 
     public ResultPanel(final MainWindow parent) {
         super();
@@ -31,16 +32,20 @@ public class ResultPanel extends JPanel {
         //this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         this.setBorder(Util.createBorder(TITLE));
 
-        String[] columnNames = {"Process",
-                "Metric",
-                "Actual Value",
-                "Computed Value",
-                "Error%"};
+        //for (String model : Preferences.getInstance().getAsList(Preferences.ENABLED_MODELS)) {
+            String[] columnNames = {"Process",
+                    "Metric",
+                    "Actual Value",
+                    "Computed Value",
+                    "Error%"};
 
-        table = new JTable(new DefaultTableModel(new Object[][]{}, columnNames));
+            table = new JTable(new DefaultTableModel(new Object[][]{}, columnNames));
+            table.setFillsViewportHeight(true);
 
-        JScrollPane scrollPane = new JScrollPane(table);
-        table.setFillsViewportHeight(true);
+            JScrollPane scrollPane = new JScrollPane(table);
+            //tabs.addTab(model, scrollPane);
+        //}
+
 
         this.add(scrollPane);
 
@@ -51,7 +56,8 @@ public class ResultPanel extends JPanel {
         return hundred + "%";
     }
 
-    public void updateResult(ModelResult result) {
+    public void updateResult(String modelName, ModelResult result) {
+        /*((JScrollPane)tabs.getTabComponentAt(tabs.indexOfTab(modelName)).getViewport()).getView();*/
         DefaultTableModel m = (DefaultTableModel) table.getModel();
 
         boolean found = false;
