@@ -96,7 +96,7 @@ public class ModelEnsemble extends Thread  {
         int offset = 0;
 
         // loop until interrupted
-        while (!this.isInterrupted()) {
+        while (!this.isInterrupted() && (offset <= data.size())) {
 
             // cat nap
             /*try {
@@ -105,25 +105,28 @@ public class ModelEnsemble extends Thread  {
                 e.printStackTrace();
             }*/
 
-            if (offset > data.size() - 1) {
 
-                // we've exhausted the input input, close the model solver
-                System.out.println("Input exhausted, ending ensemble");
-                this.interrupt();
 
-            } else {
+            for (Map.Entry<String, IEnsembleModel> entry : models.entrySet()) {
+                String name         = entry.getKey();
+                IEnsembleModel model= entry.getValue();
 
-                // get the latest input value
-                DataValue value = data.get(offset);
+                if (offset > data.size() - 1) {
 
-                for (Map.Entry<String, IEnsembleModel> entry : models.entrySet()) {
-                    String name         = entry.getKey();
-                    IEnsembleModel model= entry.getValue();
+                    // we've exhausted the input input, close the model solver
+                    System.out.println("Input exhausted, ending ensemble");
+                    this.interrupt();
 
+                } else {
+
+                    // get the latest input value and add to the model
+                    DataValue value = data.get(offset);
                     model.addInput(value);
-                    model.model();
-                    this.notifyListeners(name, model);
                 }
+
+                model.model();
+                this.notifyListeners(name, model);
+            }
 
 /*
                 // addInput DataValue to all models
@@ -160,7 +163,7 @@ public class ModelEnsemble extends Thread  {
                     }
                 } // End addInput to ensemble if accuracy is higher
 */
-            }
+
             ++offset; // increment offset for next iteration
         } // end while
     }
