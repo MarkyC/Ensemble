@@ -73,11 +73,6 @@ public class LinearRegressionModel implements IEnsembleModel {
     /* Constructor */
 
     public LinearRegressionModel() {
-        this(DEFAULT_WINDOW);
-    }
-
-    public LinearRegressionModel(int window) {
-        this.window = window;
     }
 
     /* Functions */

@@ -1,13 +1,12 @@
 package ca.yorku.cirillom.ensemble.ui.panels;
 
 import ca.yorku.cirillom.ensemble.models.ModelResult;
-import ca.yorku.cirillom.ensemble.models.PerformanceData;
 import ca.yorku.cirillom.ensemble.ui.MainWindow;
 import ca.yorku.cirillom.ensemble.util.Util;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.util.List;
+import java.awt.*;
 
 /**
  * User: Marco
@@ -21,33 +20,29 @@ public class ResultPanel extends JPanel {
 
     public static final String NO_FILE = "Please select a file first";
     private final MainWindow parent;
-    List<PerformanceData> data;
 
-    JTabbedPane tabs = new JTabbedPane();
     JTable table/* = new JTable()*/;
 
     public ResultPanel(final MainWindow parent) {
         super();
         this.parent = parent;
-        //this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         this.setBorder(Util.createBorder(TITLE));
+        this.setLayout(new BorderLayout());
 
-        //for (String model : Preferences.getInstance().getAsList(Preferences.ENABLED_MODELS)) {
-            String[] columnNames = {"Process",
-                    "Metric",
-                    "Actual Value",
-                    "Computed Value",
-                    "Error%"};
+        String[] columnNames = {
+                "Modeller",
+                "Process",
+                "Metric",
+                "Actual Value",
+                "Computed Value",
+                "Error%"};
 
-            table = new JTable(new DefaultTableModel(new Object[][]{}, columnNames));
-            table.setFillsViewportHeight(true);
+        table = new JTable(new DefaultTableModel(new Object[][]{}, columnNames));
+        table.setFillsViewportHeight(true);
 
-            JScrollPane scrollPane = new JScrollPane(table);
-            //tabs.addTab(model, scrollPane);
-        //}
+        JScrollPane scrollPane = new JScrollPane(table);
 
-
-        this.add(scrollPane);
+        this.add(scrollPane, BorderLayout.CENTER);
 
     }
 
@@ -57,18 +52,20 @@ public class ResultPanel extends JPanel {
     }
 
     public void updateResult(String modelName, ModelResult result) {
-        /*((JScrollPane)tabs.getTabComponentAt(tabs.indexOfTab(modelName)).getViewport()).getView();*/
         DefaultTableModel m = (DefaultTableModel) table.getModel();
+
+        //System.out.println(modelName + " " + result);
 
         boolean found = false;
 
         for (int i = 0; i < m.getRowCount(); i++) {
-            if ( (m.getValueAt(i, 0).equals(result.getProcess())) &&
-                    (m.getValueAt(i, 1).equals(result.getMetric())) ) {
+            if ( (m.getValueAt(i, 0).equals(modelName) &&
+                    m.getValueAt(i, 1).equals(result.getProcess())) &&
+                    (m.getValueAt(i, 2).equals(result.getMetric())) ) {
 
-                m.setValueAt(result.getActualValue(),               i, 2);
-                m.setValueAt(result.getComputedValue(),             i, 3);
-                m.setValueAt(makePercent(result.getErrorPercent()), i, 4); // multiply by 100 for percent
+                m.setValueAt(result.getActualValue(),               i, 3);
+                m.setValueAt(result.getComputedValue(),             i, 4);
+                m.setValueAt(makePercent(result.getErrorPercent()), i, 5); // multiply by 100 for percent
                 found = true;
 
             }
@@ -76,6 +73,7 @@ public class ResultPanel extends JPanel {
 
         if (!found) {
             m.addRow(new Object[] {
+                    modelName,
                     result.getProcess(),
                     result.getMetric(),
                     result.getActualValue(),

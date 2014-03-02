@@ -59,8 +59,10 @@ public class ModelPanel extends JPanel {
                         final List<DataValue> values    = entry.getValue();
 
                         ModelEnsemble ensemble = null;
+
                         try {
-                            ensemble = new ModelEnsemble(values);
+                            ensemble = new ModelEnsemble(
+                                    values, Preferences.getInstance().getAsArray(Preferences.ENABLED_MODELS));
 
                             ensemble.addPropertyChangeListener(new PropertyChangeListener() {
 
@@ -68,6 +70,14 @@ public class ModelPanel extends JPanel {
                                 public void propertyChange(PropertyChangeEvent evt) {
 
                                     IEnsembleModel model = (IEnsembleModel) evt.getNewValue();
+
+                                    System.out.println(evt.getPropertyName() +" "+
+                                            perfData.getProcess() +" "+
+                                            metric +" "+
+                                            model.getLastInput().getValue() +" "+
+                                            model.getLastPrediction() +" "+
+                                            model.getError());
+
                                     ModelPanel.this.firePropertyChange(evt.getPropertyName(), null, new ModelResult(
                                             perfData.getProcess(),
                                             metric,
@@ -77,10 +87,12 @@ public class ModelPanel extends JPanel {
                                     ));
                                 }
                             });
+
                             ensemble.start();
                         } catch (ClassNotFoundException e1) {
                             e1.printStackTrace();
                         }
+
                     }
                 }
             }

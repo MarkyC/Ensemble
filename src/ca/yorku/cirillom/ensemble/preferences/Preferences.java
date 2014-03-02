@@ -78,8 +78,6 @@ public class Preferences {
      */
     private void create() {
         put(ALL_MODELS, DEFAULT_MODELS);
-
-        save();
     }
 
     /**
@@ -107,7 +105,6 @@ public class Preferences {
      * @param value - Value
      */
     public synchronized String put(String key, String value) {
-        System.out.println("put: " + key + " " + value);
         return (String) prop.put(key, value);
     }
 
@@ -153,11 +150,12 @@ public class Preferences {
     public synchronized String get(String key) {
         return prop.get(key).toString();
     }
-
-    public List<String> getAsList(String key) {
-        return Arrays.asList(get(key).split(","));
+    public String[] getAsArray(String key) {
+        return get(key).split(", ");
     }
-
+    public List<String> getAsList(String key) {
+        return Arrays.asList(get(key).split(", "));
+    }
     public Set<String> getAsSet(String key) {
         return new HashSet<>(getAsList(key));
     }

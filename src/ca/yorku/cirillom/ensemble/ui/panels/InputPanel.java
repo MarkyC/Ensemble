@@ -58,17 +58,6 @@ public class InputPanel extends JPanel {
                             InputPanel.this.addPropertyChangeListener(InputPanel.this.parent);
                             p.addPropertyChangeListener(new PerfChange(p));
                             p.execute();
-
-                            /*// TODO: We have performance data, plug it into the Modellers
-                            try {
-                                for (PerformanceData d : p.get()) {
-                                    System.out.println(d);
-                                }
-                                System.exit(0);
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                            }*/
-
                         break;
                     }
 

@@ -17,7 +17,7 @@ public class PerformanceData {
     private String process;
 
     public PerformanceData(String process) {
-        this(process, new HashMap<String, List<DataValue>>());
+        this(process, new LinkedHashMap<String, List<DataValue>>());
     }
 
     public PerformanceData(String process, Map<String, List<DataValue>> metrics) {

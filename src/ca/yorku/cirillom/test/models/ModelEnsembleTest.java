@@ -38,7 +38,7 @@ public class ModelEnsembleTest {
     @Before
     public void setUp() throws Exception {
 
-        model = new ModelEnsemble(testData);
+        //model = new ModelEnsemble(testData);
 
     }
 

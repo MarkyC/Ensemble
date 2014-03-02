@@ -1,10 +1,11 @@
 package ca.yorku.cirillom.ensemble.models;
 
-import ca.yorku.cirillom.ensemble.preferences.Preferences;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * User: Marco
@@ -15,23 +16,23 @@ public class ModelEnsemble extends Thread  {
 
     private final List<DataValue> data;
 
-    private Map<String, IEnsembleModel> models = new HashMap<>();
-    public void addModel(String name) throws ClassNotFoundException {
+    private Map<String, IEnsembleModel> models = new LinkedHashMap<>();
+    /*public void addModel(String name) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
         if (availableModels.containsKey(name)) {
-            models.put(name, availableModels.get(name));
+            ensemble.put(name, (IEnsembleModel) availableModels.get(name).newInstance());
         } else {
             throw new ClassNotFoundException("Model for " + name + " not found.");
         }
-    }
+    }*/
 
-    private Map<String, IEnsembleModel> ensemble = new HashMap<>();
-    public void addModelToEnsemble(String name) throws ClassNotFoundException {
+    private Map<String, IEnsembleModel> ensemble = new LinkedHashMap<>();
+    /*public void addModelToEnsemble(String name) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
         if (availableModels.containsKey(name)) {
-            ensemble.put(name, availableModels.get(name));
+            ensemble.put(name, (IEnsembleModel) availableModels.get(name).newInstance());
         } else {
             throw new ClassNotFoundException("Model for " + name + " not found.");
         }
-    }
+    }*/
 
     private List<PropertyChangeListener> listeners = new ArrayList<>();
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -46,25 +47,36 @@ public class ModelEnsemble extends Thread  {
     /**
      * List of Models this ModelEnsemble Supports
      */
-    public static final Map<String, IEnsembleModel> availableModels = new HashMap<>();
+    /*public static final Map<String, Class> availableModels = new LinkedHashMap<>();
     static {
-        availableModels.put(Preferences.MOVING_AVERAGE, new MovingAverageModel());
-    }
+        availableModels.put(Preferences.MOVING_AVERAGE, MovingAverageModel.class);
+        availableModels.put(Preferences.LINEAR_REGRESSION, LinearRegressionModel.class);
+    }*/
 
-    public ModelEnsemble() throws ClassNotFoundException {
+    /*public ModelEnsemble() {
         this(new ArrayList<DataValue>());
     }
 
-    public ModelEnsemble(List<DataValue> data) throws ClassNotFoundException {
+    public ModelEnsemble(List<DataValue> data) {
 
         // Initialize with the availableModels and the passed input
         this(data, availableModels.keySet().toArray(new String[1]));
-    }
+    }*/
 
     public ModelEnsemble(List<DataValue> data, String[] models) throws ClassNotFoundException {
         this.data = data;//new ArrayList<>(data);
         for ( String model : models ) {
-            addModel(model);
+            //addModel(model);
+            switch(model.trim()) {
+                case "moving-average":
+                    this.models.put("moving-average", new MovingAverageModel());
+                break;
+                case "linear-regression":
+                    this.models.put("linear-regression", new LinearRegressionModel());
+                break;
+                default:
+                    throw new ClassNotFoundException("Cannot find class " + model);
+            }
         }
 
     }
@@ -82,18 +94,6 @@ public class ModelEnsemble extends Thread  {
     public void run() {
 
         int offset = 0;
-/*
-        // populate models from Preferences
-        for ( String model : Preferences.getInstance().get(Preferences.ALL_MODELS).split(",") ) {
-            switch (model) {
-                case Preferences.MOVING_AVERAGE:
-                    System.out.println("putting");
-                    models.put(model, new MovingAverageModel());
-                break;
-            }
-        }*/
-
-        //MovingAverageModel theModel = new MovingAverageModel();
 
         // loop until interrupted
         while (!this.isInterrupted()) {
@@ -114,10 +114,7 @@ public class ModelEnsemble extends Thread  {
             } else {
 
                 // get the latest input value
-                DataValue value = data.get(offset).clone();
-                //System.out.println(value);
-
-                //models.
+                DataValue value = data.get(offset);
 
                 for (Map.Entry<String, IEnsembleModel> entry : models.entrySet()) {
                     String name         = entry.getKey();

@@ -51,7 +51,7 @@ public class TSVParser extends SwingWorker<Boolean, Integer>  {
         int fileSize     = Util.getFileLength(file);
 
         // This map will make it easier to keep track of which DataValues belong to which PerformanceDatas
-        Map<String, PerformanceData> perfData = new HashMap<>();
+        Map<String, PerformanceData> perfData = new LinkedHashMap<>();
 
         try (BufferedReader in = new BufferedReader(new FileReader(file))) {
 

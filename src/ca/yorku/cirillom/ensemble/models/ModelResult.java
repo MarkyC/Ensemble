@@ -46,4 +46,16 @@ public class ModelResult {
     public double getErrorPercent() {
         return errorPercent;
     }
+
+
+    @Override
+    public String toString() {
+        return "ModelResult{" +
+                "process='" + process + '\'' +
+                ", metric='" + metric + '\'' +
+                ", actualValue=" + actualValue +
+                ", computedValue=" + computedValue +
+                ", errorPercent=" + errorPercent +
+                '}';
+    }
 }
