@@ -2,6 +2,7 @@ package ca.yorku.cirillom.ensemble.models;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,38 +18,25 @@ import java.util.List;
  */
 public class LinearRegressionModel implements IEnsembleModel {
 
-    /* Constants */
-    public static final int DEFAULT_WINDOW = 10;
-
     /* Fields and Accessors */
 
-    private int window;
-    public int getWindow() {
-        return window;
+    private List<ModelResult> results;
+    @Override
+    public List<ModelResult> getResults() {
+        return this.results;
     }
-    public void setWindow(int window) {
-        this.window = window;
-    }
-
-    private double nextPrediction = 0;
-    @Override public double getNextPrediction() {
-        return nextPrediction;
-    }
-    private void setNextPrediction(double result) {
-        setLastPrediction(this.nextPrediction);
-        this.nextPrediction = result;
+    public void setResults(List<ModelResult> results) {
+        this.results = results;
     }
 
-    private double lastPrediction = 0;
-    @Override public double getLastPrediction() { return lastPrediction; }
-    public void setLastPrediction(double lastPrediction) { this.lastPrediction = lastPrediction; }
 
-    private final SimpleRegression input = new SimpleRegression();
+    //private final SimpleRegression input = new SimpleRegression();
+    final private List<DataValue> input = new ArrayList<>();
     @Override
     public void addInput(DataValue input) {
 
         synchronized (this.input) {
-            this.input.addData(input.getTime().getTime(), input.getValue());
+            this.input.add(input);
         }
 
         this.lastInput = input;
@@ -78,23 +66,56 @@ public class LinearRegressionModel implements IEnsembleModel {
     /* Functions */
 
     @Override
-    public double model() {
+    public List<ModelResult> model() {
 
+        // Compute Results
+        List<SimpleRegression> computedResults = createFilledListOfRegression(input.get(0).getMetrics().size());
         synchronized (input) {
-            setNextPrediction(input.predict(this.getLastInput().getTime().getTime()));
+            for (DataValue value : input) {
+                List<Metric> metrics = value.getMetrics();
+                for (int i = 0; i < metrics.size(); i++) {
+                    Metric metric = metrics.get(i);
+                    computedResults.get(i).addData(value.getWorkload(), metric.getValue());
+                }
+            }
         }
 
-        return getNextPrediction();
+        // Create ModelResult Array based on computed results
+        List<ModelResult> results = new ArrayList<>();
+        DataValue latestDataValue = input.get(input.size() - 1);
+        List<Metric> metrics = latestDataValue.getMetrics();
+        for (int i = 0; i < metrics.size(); i++) {
+            Metric metric = metrics.get(i);
+
+            double computedResult = computedResults.get(i).predict(metric.getValue());
+
+            // Create results
+            results.add(new ModelResult(
+                    metric.getProcess(),
+                    metric.getName(),
+                    metric.getValue(),
+                    computedResult,
+                    computedResults.get(i).getMeanSquareError()
+            ));
+        }
+
+        setResults(results);
+        return results;
     }
 
-    @Override
+
+   /* @Override
     public double getError() {
 
         return input.getMeanSquareError();
 
-    }
+    }*/
 
-    private boolean doubleEquals(double a, double b) {
-        return (Math.abs(a-b) < 0.0001);
+    private List<SimpleRegression> createFilledListOfRegression(int size) {
+        List<SimpleRegression> result = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            result.add(new SimpleRegression());
+        }
+        return result;
     }
 }

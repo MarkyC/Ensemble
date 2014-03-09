@@ -12,6 +12,7 @@ import java.awt.*;
 import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.List;
 
 /**
  * User: Marco
@@ -73,12 +74,12 @@ public class MainWindow implements PropertyChangeListener {
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         //System.out.println(event.getPropertyName());
-        if ("finished".equalsIgnoreCase(event.getPropertyName())) {
-            java.util.List<PerformanceData> result = inputPanel.getData();
-            modelPanel.setData(result);
+        if ("fileLoaded".equalsIgnoreCase(event.getPropertyName())) {
+            PerformanceData result = inputPanel.getPerformanceData();
+            modelPanel.setPerformanceData(result);
             modelPanel.setEnabled(true);
         } else if (Preferences.getInstance().getAsList(Preferences.ENABLED_MODELS).contains(event.getPropertyName()) ) {
-            resultPanel.updateResult(event.getPropertyName(), (ModelResult) event.getNewValue());
+            resultPanel.updateResult(event.getPropertyName(), (List<ModelResult>) event.getNewValue());
         }
     }
 }

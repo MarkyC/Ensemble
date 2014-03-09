@@ -1,78 +1,26 @@
 package ca.yorku.cirillom.ensemble.models;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * User: Marco
  * Email: cirillom@yorku.ca
  * Date: 2/9/14 11:10 PM.
- * Holds a list of DataValues for each metric the PerformanceData is watching,
- * for a specific process. A metric could be "CPU usage" for example.
- * It's DataValues would hold the CPU usage for a given time.
+ * Holds a list of DataValues for each metric the PerformanceData is watching
  */
 public class PerformanceData {
 
-    private Map<String, List<DataValue>> metrics;
+    private List<DataValue> dataValues;
 
-    private String process;
-
-    public PerformanceData(String process) {
-        this(process, new LinkedHashMap<String, List<DataValue>>());
+    public PerformanceData(List<DataValue> dataValues) {
+        this.dataValues = dataValues;
     }
 
-    public PerformanceData(String process, Map<String, List<DataValue>> metrics) {
-
-        this.process = process;
-        this.metrics = metrics;
+    public List<DataValue> getDataValues() {
+        return dataValues;
     }
 
-
-    public String getProcess() {
-        return process;
-    }
-
-    public Map<String, List<DataValue>> getMetrics() {
-        return metrics;
-    }
-
-    public boolean has(String metric) {
-        return metrics.containsKey(metric);
-    }
-
-
-    public List<DataValue> add(String metric, DataValue value) {
-
-        // If metric exists, append new value, else create a new list
-        List<DataValue> list = has(metric) ? get(metric) : new ArrayList<DataValue>();
-
-        // Add metric
-        list.add(value);
-        return metrics.put(metric, list);
-    }
-
-    public List<DataValue> get(String metric) {
-        return metrics.get(metric);
-    }
-
-    private static String metricsToString(Map<String, List<DataValue>> metrics) {
-        String result = "{ ";
-
-        for (String metric : metrics.keySet()) {
-            result += "[ " + metric + " ";
-            for (DataValue val : metrics.get(metric)) {
-                result += val.toString() + " ";
-            }
-            result += " ] ";
-        }
-
-        return result + "} ";
-    }
-
-    @Override
-    public String toString() {
-        return "PerformanceData{" +
-                "process='" + process + '\'' +
-                "metrics=" + metricsToString(metrics) +
-                '}';
+    public boolean addDataValue(DataValue v) {
+        return dataValues.add(v);
     }
 }

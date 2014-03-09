@@ -1,6 +1,7 @@
 package ca.yorku.cirillom.ensemble.ui.panels;
 
-import ca.yorku.cirillom.ensemble.models.*;
+import ca.yorku.cirillom.ensemble.models.ModelEnsemble;
+import ca.yorku.cirillom.ensemble.models.PerformanceData;
 import ca.yorku.cirillom.ensemble.preferences.Preferences;
 import ca.yorku.cirillom.ensemble.ui.MainWindow;
 import ca.yorku.cirillom.ensemble.util.Util;
@@ -12,9 +13,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 /**
  * User: Marco
@@ -29,7 +28,11 @@ public class ModelPanel extends JPanel {
 
     private final MainWindow parent;
 
-    private List<PerformanceData> data          = new ArrayList<>();
+    private PerformanceData performanceData;
+    public void setPerformanceData(PerformanceData data) {
+        this.performanceData = data;
+    }
+
     private final List<JCheckBox> checkboxes    = new ArrayList<>();
 
     private final JButton startButton;
@@ -47,9 +50,24 @@ public class ModelPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                for (JCheckBox box : checkboxes) box.setEnabled(false);
+                ModelEnsemble ensemble = null;
+                try {
+                    ensemble = new ModelEnsemble(performanceData,
+                                    Preferences.getInstance().getAsArray(Preferences.ENABLED_MODELS));
+                    ensemble.addPropertyChangeListener(new PropertyChangeListener() {
+                        @Override
+                        public void propertyChange(PropertyChangeEvent evt) {
+                            ModelPanel.this.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+                        }
+                    });
+                    ensemble.start();
+                } catch (ClassNotFoundException e1) {
+                    e1.printStackTrace();
+                }
 
-                for (Iterator<PerformanceData> performanceDataIterator = data.iterator(); performanceDataIterator.hasNext();) {
+                //for (JCheckBox box : checkboxes) box.setEnabled(false);
+
+                /*for (Iterator<PerformanceData> performanceDataIterator = performanceDatas.iterator(); performanceDataIterator.hasNext();) {
 
                     final PerformanceData perfData = performanceDataIterator.next();
 
@@ -92,12 +110,13 @@ public class ModelPanel extends JPanel {
                         } catch (ClassNotFoundException e1) {
                             e1.printStackTrace();
                         }
-
                     }
-                }
+                }*/
             }
         });
 
+
+        // Set up Checkboxes
         for (String modelName : Preferences.getInstance().get(Preferences.ALL_MODELS).split(",")) {
             final JCheckBox box = new JCheckBox(modelName);
 
@@ -135,10 +154,6 @@ public class ModelPanel extends JPanel {
         container.add(startButton);
         this.add(container);
 
-    }
-
-    public void setData(List<PerformanceData> data) {
-        this.data = data;
     }
 
     @Override

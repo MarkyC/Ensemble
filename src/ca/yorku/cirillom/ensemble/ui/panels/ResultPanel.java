@@ -7,6 +7,7 @@ import ca.yorku.cirillom.ensemble.util.Util;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.util.List;
 
 /**
  * User: Marco
@@ -51,34 +52,36 @@ public class ResultPanel extends JPanel {
         return hundred + "%";
     }
 
-    public void updateResult(String modelName, ModelResult result) {
+    public void updateResult(String modelName, List<ModelResult> results) {
         DefaultTableModel m = (DefaultTableModel) table.getModel();
 
         //System.out.println(modelName + " " + result);
 
-        boolean found = false;
+        for (ModelResult result : results) {
+            boolean found = false;
 
-        for (int i = 0; i < m.getRowCount(); i++) {
-            if ( (m.getValueAt(i, 0).equals(modelName) &&
-                    m.getValueAt(i, 1).equals(result.getProcess())) &&
-                    (m.getValueAt(i, 2).equals(result.getMetric())) ) {
+            for (int i = 0; i < m.getRowCount(); i++) {
+                if ( (m.getValueAt(i, 0).equals(modelName) &&
+                        m.getValueAt(i, 1).equals(result.getProcess())) &&
+                        (m.getValueAt(i, 2).equals(result.getMetric())) ) {
 
-                m.setValueAt(result.getActualValue(),               i, 3);
-                m.setValueAt(result.getComputedValue(),             i, 4);
-                m.setValueAt(makePercent(result.getErrorPercent()), i, 5); // multiply by 100 for percent
-                found = true;
+                    m.setValueAt(result.getActualValue(),               i, 3);
+                    m.setValueAt(result.getComputedValue(),             i, 4);
+                    m.setValueAt(makePercent(result.getErrorPercent()), i, 5); // multiply by 100 for percent
+                    found = true;
 
+                }
             }
-        }
 
-        if (!found) {
-            m.addRow(new Object[] {
-                    modelName,
-                    result.getProcess(),
-                    result.getMetric(),
-                    result.getActualValue(),
-                    result.getComputedValue(),
-                    result.getErrorPercent()+"%"});
+            if (!found) {
+                m.addRow(new Object[] {
+                        modelName,
+                        result.getProcess(),
+                        result.getMetric(),
+                        result.getActualValue(),
+                        result.getComputedValue(),
+                        result.getErrorPercent()+"%"});
+            }
         }
     }
 }

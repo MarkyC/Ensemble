@@ -1,6 +1,7 @@
 package ca.yorku.cirillom.ensemble.models;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * User: Marco
@@ -8,42 +9,47 @@ import java.util.Date;
  * Date: 2/9/14 11:12 PM.
  * A DataValue is a POJO that stores a performance monitoring value and the time it was collected
  */
-public class DataValue implements Cloneable{
+public class DataValue {
 
-    private double value;
-    private Date time;
+    private int workload;
+    private Date startTime;
+    private Date endTime;
+    private List<Metric> metrics;
 
-    public double getValue() {
-        return value;
+    public DataValue(int workload, Date startTime, Date endTime, List<Metric> metrics) {
+        this.workload = workload;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.metrics = metrics;
     }
 
-    public void setValue(double value) {
-        this.value = value;
+    public int getWorkload() {
+        return workload;
     }
 
-    public Date getTime() {
-        return time;
+    public Date getStartTime() {
+        return startTime;
     }
 
-    public void setTime(Date time) {
-        this.time = time;
+    public Date getEndTime() {
+        return endTime;
     }
 
-    public DataValue(double value, Date time) {
-        this.value = value;
-        this.time = time;
+    public List<Metric> getMetrics() {
+        return metrics;
+    }
+
+    public boolean addMetric(Metric m) {
+        return metrics.add(m);
     }
 
     @Override
     public String toString() {
         return "DataValue{" +
-                "value=" + value +
-                ", time=" + time +
+                "workload=" + workload +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", metrics=" + metrics +
                 '}';
-    }
-
-    @Override
-    public DataValue clone() {
-        return new DataValue(getValue(), getTime());
     }
 }

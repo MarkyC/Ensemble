@@ -31,24 +31,24 @@ public interface IEnsembleModel {
      * Runs this modeller on the set of all DataValues
      * @return the latest computed result
      */
-    public double model();
+    public List<ModelResult> model();
 
     /**
      * Returns the latest computed result
      * @return the latest computed result
      */
-    public double getNextPrediction();
+    public List<ModelResult> getResults();
 
     /**
      * Returns the second latest computed result. This is separate from getNextPrediction() because this result
      * can be compared to gathered input to compute this modellers accuracy
      * @return the second latest computed result
      */
-    public double getLastPrediction();
+    //public double getLastPrediction();
 
     /**
      * Returns the most recently computed accuracy
      * @return the most recently computed accuracy
      */
-    public double getError();
+    //public double getError();
 }

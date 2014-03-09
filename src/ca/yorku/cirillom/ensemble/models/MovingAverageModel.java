@@ -1,6 +1,7 @@
 package ca.yorku.cirillom.ensemble.models;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,18 +30,16 @@ public class MovingAverageModel implements IEnsembleModel {
         this.window = window;
     }
 
-    private double nextPrediction = 0;
-    @Override public double getNextPrediction() {
-        return nextPrediction;
+    /**
+     * Model Results
+     */
+    private List<ModelResult> results = new ArrayList<>();
+    public List<ModelResult> getResults() {
+        return results;
     }
-    private void setNextPrediction(double result) {
-        setLastPrediction(this.nextPrediction);
-        this.nextPrediction = result;
+    public void setResults(List<ModelResult> results) {
+        this.results = results;
     }
-
-    private double lastPrediction = 0;
-    @Override public double getLastPrediction() { return lastPrediction; }
-    public void setLastPrediction(double lastPrediction) { this.lastPrediction = lastPrediction; }
 
     private final ArrayDeque<DataValue> input;
     @Override
@@ -58,9 +57,6 @@ public class MovingAverageModel implements IEnsembleModel {
             this.addInput(v);
         }
     }
-    /*public ArrayDeque<DataValue> getInput() {
-        return input;
-    }*/
     @Override
     public DataValue getLastInput() throws NullPointerException {
         synchronized (input) {
@@ -92,41 +88,55 @@ public class MovingAverageModel implements IEnsembleModel {
     }
 
     @Override
-    public double model() {
-        double sum = 0;
-        int size = 0;
+    public List<ModelResult> model() {
 
+        // Compute Results
+        List<Double> computedResults = createFilledListOfDouble(input.size());
         synchronized (input) {
             for (DataValue value : input) {
-                sum += value.getValue();
-                size++;
+                List<Metric> metrics = value.getMetrics();
+                for (int i = 0; i < metrics.size(); i++) {
+                    Metric metric = metrics.get(i);
+                    computedResults.add(i, computedResults.get(i) + metric.getValue());
+                }
             }
         }
 
-        setNextPrediction(sum / ((double) size));
+        // Create ModelResult Array based on computed results
+        List<ModelResult> results = new ArrayList<>();
+        List<Metric> metrics = input.getLast().getMetrics();
+        int size = input.size();
+        for (int i = 0; i < metrics.size(); i++) {
+            Metric metric = metrics.get(i);
 
+            double computedResult = computedResults.get(i) / size;
 
-        return getNextPrediction();
+            // Create results
+            results.add(new ModelResult(
+                    metric.getProcess(),
+                    metric.getName(),
+                    metric.getValue(),
+                    computedResult,
+                    getError(metric.getValue(), computedResult)
+            ));
+        }
+
+        setResults(results);
+        return results;
     }
 
-    @Override
-    public double getError() {
-        // the last added value
-        double lastInput        = getLastInput().getValue();
-        double lastPrediction   = getLastPrediction();
+    public double getError(double predicted, double actual) {
+        return Math.abs(predicted - actual)/actual;
+    }
 
-        // prediction and input are both 0
-        if ( doubleEquals(0, lastInput) && doubleEquals(0, lastPrediction) ) {
-            return 0;
+    /* Helper Methods */
+
+    private List<Double> createFilledListOfDouble(int size) {
+        List<Double> result = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            result.add(0d);
         }
-
-        // prevent divide by 0
-        if ( doubleEquals(0, lastInput) ) {
-            return Double.POSITIVE_INFINITY;
-        }
-
-        // return percentage error, lower is more accurate
-        return ( Math.abs(getLastPrediction() - lastInput) / lastInput );
+        return result;
     }
 
     private boolean doubleEquals(double a, double b) {

@@ -4,8 +4,8 @@ import ca.yorku.cirillom.ensemble.models.PerformanceData;
 import ca.yorku.cirillom.ensemble.ui.MainWindow;
 import ca.yorku.cirillom.ensemble.ui.util.ProgressWindow;
 import ca.yorku.cirillom.ensemble.util.InputFileFilter;
-import ca.yorku.cirillom.ensemble.util.TSVParser;
 import ca.yorku.cirillom.ensemble.util.Util;
+import ca.yorku.cirillom.ensemble.util.XMLParser;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -13,7 +13,6 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.List;
 
 /**
  * User: Marco
@@ -29,7 +28,7 @@ public class InputPanel extends JPanel {
     public static final String BROWSE_FILE = "Browse...";
     public static final String NO_FILE = "No File Selected";
     private final MainWindow parent;
-    List<PerformanceData> data;
+    PerformanceData performanceData;
 
     public InputPanel(final MainWindow parent) {
         super();
@@ -49,16 +48,48 @@ public class InputPanel extends JPanel {
 
                 if (JFileChooser.APPROVE_OPTION == fileChooser.showOpenDialog(InputPanel.this)) {
                 // User has selected a valid file
-                    File file = fileChooser.getSelectedFile();
+
+                    final File file = fileChooser.getSelectedFile();
+                    final ProgressWindow progressWindow = new ProgressWindow();
+
                     switch(Util.getExtension(file)) {
-                        case "tsv":
+                        /*case "tsv":
 
                             TSVParser p = new TSVParser(file, new ProgressWindow());
 
                             InputPanel.this.addPropertyChangeListener(InputPanel.this.parent);
                             p.addPropertyChangeListener(new PerfChange(p));
                             p.execute();
-                        break;
+                        break;*/
+                        case "xml":
+                            final XMLParser xmlParser = new XMLParser(file);
+                            xmlParser.addPropertyChangeListener(new PropertyChangeListener() {
+
+                                @Override
+                                public void propertyChange(PropertyChangeEvent evt) {
+                                    switch (evt.getPropertyName()) {
+
+                                        case "progress":
+                                            progressWindow.set((int) evt.getNewValue());
+                                        break;
+
+                                        case "state":
+                                            if ( SwingWorker.StateValue.DONE.equals(evt.getNewValue()) ) {
+                                                // Close progress window
+                                                progressWindow.dispose();
+
+                                                // Set performance Data
+                                                InputPanel.this.performanceData = xmlParser.getResult();
+
+                                                // Notify listeners they can grab our performance data
+                                                InputPanel.this.firePropertyChange("fileLoaded", false, true);
+                                            }
+                                        break;
+
+                                    }
+                                }
+                            });
+                            xmlParser.execute();
                     }
 
                     fileLabel.setText(file.getName());
@@ -71,7 +102,7 @@ public class InputPanel extends JPanel {
         this.add(openFile);
     }
 
-    class PerfChange implements PropertyChangeListener {
+    /*class PerfChange implements PropertyChangeListener {
 
         private final TSVParser parser;
 
@@ -80,13 +111,13 @@ public class InputPanel extends JPanel {
         public void propertyChange(final PropertyChangeEvent event) {
 
             if ("finished" == event.getPropertyName()) {
-                data = parser.getResult();
+                performanceData = parser.getResult();
                 InputPanel.this.firePropertyChange("finished", false, true);
             }
         }
-    }
+    }*/
 
-    public List<PerformanceData> getData() {
-        return this.data;
+    public PerformanceData getPerformanceData() {
+        return this.performanceData;
     }
 }

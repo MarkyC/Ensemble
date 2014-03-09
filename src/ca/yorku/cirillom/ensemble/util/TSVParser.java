@@ -1,18 +1,13 @@
 package ca.yorku.cirillom.ensemble.util;
 
-import ca.yorku.cirillom.ensemble.models.DataValue;
 import ca.yorku.cirillom.ensemble.models.PerformanceData;
 import ca.yorku.cirillom.ensemble.ui.util.ProgressWindow;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.swing.*;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * User: Marco
@@ -44,6 +39,10 @@ public class TSVParser extends SwingWorker<Boolean, Integer>  {
         }
     }
 
+    protected Boolean doInBackground() {
+        throw new NotImplementedException();
+    }
+/*
     protected Boolean doInBackground() throws InterruptedException {
 
         // Get current line number and total line numbers so we can update the progress
@@ -116,7 +115,7 @@ public class TSVParser extends SwingWorker<Boolean, Integer>  {
 
         return true;
         //return result;
-    }
+    }*/
 
     /**
      *

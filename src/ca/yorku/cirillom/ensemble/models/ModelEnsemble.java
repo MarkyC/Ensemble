@@ -2,10 +2,7 @@ package ca.yorku.cirillom.ensemble.models;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * User: Marco
@@ -14,7 +11,7 @@ import java.util.Map;
  */
 public class ModelEnsemble extends Thread  {
 
-    private final List<DataValue> data;
+    private final PerformanceData performanceData;
 
     private Map<String, IEnsembleModel> models = new LinkedHashMap<>();
     /*public void addModel(String name) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
@@ -38,9 +35,9 @@ public class ModelEnsemble extends Thread  {
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         this.listeners.add(listener);
     }
-    public void notifyListeners(String propertyName, IEnsembleModel model) {
+    public void notifyListeners(String propertyName, List<ModelResult> previousResult, List<ModelResult> result) {
         for (PropertyChangeListener p : listeners) {
-            p.propertyChange(new PropertyChangeEvent(this, propertyName, null, model));
+            p.propertyChange(new PropertyChangeEvent(this, propertyName, previousResult, result));
         }
     }
 
@@ -63,8 +60,8 @@ public class ModelEnsemble extends Thread  {
         this(data, availableModels.keySet().toArray(new String[1]));
     }*/
 
-    public ModelEnsemble(List<DataValue> data, String[] models) throws ClassNotFoundException {
-        this.data = data;//new ArrayList<>(data);
+    public ModelEnsemble(PerformanceData perfData, String[] models) throws ClassNotFoundException {
+        this.performanceData = perfData;//new ArrayList<>(data);
         for ( String model : models ) {
             //addModel(model);
             switch(model.trim()) {
@@ -83,7 +80,7 @@ public class ModelEnsemble extends Thread  {
 
     @Override
     public void start() {
-        if (1 > this.data.size()) {
+        if (this.performanceData == null) {
             throw new IllegalStateException("Cannot start the ModelEnsemble without adding input. Use addData()");
         } else {
             super.start();
@@ -93,10 +90,10 @@ public class ModelEnsemble extends Thread  {
     @Override
     public void run() {
 
-        int offset = 0;
+        //int offset  = 0;
 
         // loop until interrupted
-        while (!this.isInterrupted() && (offset <= data.size())) {
+        //while ( !this.isInterrupted() ) {
 
             // cat nap
             /*try {
@@ -105,9 +102,21 @@ public class ModelEnsemble extends Thread  {
                 e.printStackTrace();
             }*/
 
+            for ( Iterator<DataValue> it = performanceData.getDataValues().iterator(); it.hasNext(); ) {
+                DataValue dataValue = it.next();
+
+                for (Map.Entry<String, IEnsembleModel> entry : models.entrySet()) {
+                    String name         = entry.getKey();
+                    IEnsembleModel model= entry.getValue();
+
+                    model.addInput(dataValue);
+                    this.notifyListeners(name, model.getResults(), model.model());
+                }
+            }
 
 
-            for (Map.Entry<String, IEnsembleModel> entry : models.entrySet()) {
+
+            /*for (Map.Entry<String, IEnsembleModel> entry : models.entrySet()) {
                 String name         = entry.getKey();
                 IEnsembleModel model= entry.getValue();
 
@@ -126,7 +135,7 @@ public class ModelEnsemble extends Thread  {
 
                 model.model();
                 this.notifyListeners(name, model);
-            }
+            }*/
 
 /*
                 // addInput DataValue to all models
@@ -164,7 +173,7 @@ public class ModelEnsemble extends Thread  {
                 } // End addInput to ensemble if accuracy is higher
 */
 
-            ++offset; // increment offset for next iteration
-        } // end while
+            //++offset; // increment offset for next iteration
+        //} // end while
     }
 }
