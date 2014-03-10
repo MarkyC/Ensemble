@@ -13,7 +13,7 @@ package ca.yorku.cirillom.ensemble.models;
  */
 public class ModelResult {
 
-    private final int workload;
+    private int workload;
     private String process;
     private String metric;
     private double actualValue;
@@ -51,6 +51,10 @@ public class ModelResult {
 
     public double getErrorPercent() {
         return errorPercent;
+    }
+
+    public void setWorkload(int workload) {
+        this.workload = workload;
     }
 
 

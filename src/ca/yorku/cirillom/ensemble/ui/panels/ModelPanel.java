@@ -54,7 +54,9 @@ public class ModelPanel extends JPanel {
                     ensemble.addPropertyChangeListener(new PropertyChangeListener() {
                         @Override
                         public void propertyChange(PropertyChangeEvent evt) {
-                            ModelPanel.this.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+
+                            ModelPanel.this.firePropertyChange(evt.getPropertyName(), null, evt.getNewValue());
+
                         }
                     });
                     ensemble.start();

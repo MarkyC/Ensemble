@@ -116,7 +116,19 @@ public class ModelEnsemble extends Thread  {
                 IEnsembleModel model= entry.getValue();
 
                 model.addInput(dataValue);
-                this.notifyListeners(name, model.getResults(), model.model());
+                model.model();
+                //this.notifyListeners(name, model.getResults(), model.model());
+            }
+        }
+
+        for (Map.Entry<String, IEnsembleModel> entry : models.entrySet()) {
+            String name         = entry.getKey();
+            IEnsembleModel model= entry.getValue();
+
+
+            int[] toPredict = {10, 25, 50, 100};
+            for (int workload : toPredict) {
+                this.notifyListeners(name, model.getResults(), model.predict(workload));
             }
         }
 

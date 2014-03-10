@@ -73,7 +73,7 @@ public class MainWindow implements PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent event) {
-        //System.out.println(event.getPropertyName());
+        System.out.println(event.getPropertyName());
         if ("fileLoaded".equalsIgnoreCase(event.getPropertyName())) {
             PerformanceData result = inputPanel.getPerformanceData();
             modelPanel.setPerformanceData(result);

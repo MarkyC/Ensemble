@@ -39,6 +39,11 @@ public interface IEnsembleModel {
      */
     public List<ModelResult> getResults();
 
+    /**
+     * Attempts to predict the resource usage based on the given workload
+     * @param workload - the workload (number of users)
+     * @return A List of ModelResults, one for each metric
+     */
     public List<ModelResult> predict(int workload);
 
     /**

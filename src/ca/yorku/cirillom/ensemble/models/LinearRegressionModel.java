@@ -2,8 +2,7 @@ package ca.yorku.cirillom.ensemble.models;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * User: Marco
@@ -110,6 +109,7 @@ public class LinearRegressionModel implements IEnsembleModel {
 
     @Override
     public List<ModelResult> predict(int workload) {
+
         List<ModelResult> results = new ArrayList<>();
         DataValue latestDataValue = inputs.get(inputs.size() - 1);
         List<Metric> metrics = latestDataValue.getMetrics();
@@ -118,15 +118,46 @@ public class LinearRegressionModel implements IEnsembleModel {
 
             double computedResult = regressions.get(i).predict(workload);
 
+            double actualValue = Double.NaN;
+            for (DataValue v : inputs) {
+                if (v.getWorkload() == workload) {
+                    actualValue = v.getMetrics().get(i).getValue();
+                }
+            }
+
             // Create results
             results.add(new ModelResult(
                     metric.getProcess(),
                     metric.getName(),
                     workload,
-                    /*metric.getValue()*/Double.NaN,
+                    actualValue,
                     computedResult,
                     regressions.get(i).getMeanSquareError()
             ));
+        }
+
+        return results;
+    }
+
+    private List<Map<Integer, Double>> getActualValues(List<DataValue> inputs) {
+
+        List<Map<Integer, Double>> results = new ArrayList<>(inputs.size());
+
+        for (DataValue input : inputs) {
+            List<Metric> metrics = input.getMetrics();
+            for (int i = 0; i < metrics.size(); i++) {
+
+                Map<Integer, Double> actuals = null;
+                try {
+                    actuals = results.get(i);
+                } catch (IndexOutOfBoundsException e) {
+                    actuals = new LinkedHashMap<>();
+                }
+
+                actuals.put(input.getWorkload(), metrics.get(i).getValue());
+                results.add(i, actuals);
+
+            }
         }
 
         return results;
