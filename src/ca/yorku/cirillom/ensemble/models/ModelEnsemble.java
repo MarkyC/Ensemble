@@ -32,6 +32,12 @@ public class ModelEnsemble extends Thread  {
     }*/
 
     private List<PropertyChangeListener> listeners = new ArrayList<>();
+
+    private int nextWorkload = 0;
+    public void setNextWorkload(int nextWorkload) {
+        this.nextWorkload = nextWorkload;
+    }
+
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         this.listeners.add(listener);
     }
@@ -102,17 +108,41 @@ public class ModelEnsemble extends Thread  {
                 e.printStackTrace();
             }*/
 
-            for ( Iterator<DataValue> it = performanceData.getDataValues().iterator(); it.hasNext(); ) {
-                DataValue dataValue = it.next();
+        for ( Iterator<DataValue> it = performanceData.getDataValues().iterator(); it.hasNext(); ) {
+            DataValue dataValue = it.next();
+
+            for (Map.Entry<String, IEnsembleModel> entry : models.entrySet()) {
+                String name         = entry.getKey();
+                IEnsembleModel model= entry.getValue();
+
+                model.addInput(dataValue);
+                this.notifyListeners(name, model.getResults(), model.model());
+            }
+        }
+
+        while ( !this.isInterrupted() ) {
+
+            // cat nap
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            if (0 != this.nextWorkload) {
+
+                System.out.println("next workload: " +nextWorkload);
 
                 for (Map.Entry<String, IEnsembleModel> entry : models.entrySet()) {
                     String name         = entry.getKey();
                     IEnsembleModel model= entry.getValue();
 
-                    model.addInput(dataValue);
-                    this.notifyListeners(name, model.getResults(), model.model());
+                    this.notifyListeners(name, model.getResults(), model.predict(this.nextWorkload));
                 }
+
+                this.nextWorkload = 0;
             }
+        }
 
 
 

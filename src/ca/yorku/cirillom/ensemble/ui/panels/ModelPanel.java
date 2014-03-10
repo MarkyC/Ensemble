@@ -3,7 +3,6 @@ package ca.yorku.cirillom.ensemble.ui.panels;
 import ca.yorku.cirillom.ensemble.models.ModelEnsemble;
 import ca.yorku.cirillom.ensemble.models.PerformanceData;
 import ca.yorku.cirillom.ensemble.preferences.Preferences;
-import ca.yorku.cirillom.ensemble.ui.MainWindow;
 import ca.yorku.cirillom.ensemble.util.Util;
 
 import javax.swing.*;
@@ -23,10 +22,9 @@ import java.util.List;
  */
 public class ModelPanel extends JPanel {
 
-    public static final String TITLE = "Model Ensemble";
+    public static final String ENSEMBLE_TITLE = "Model Ensemble";
+    public static final String QUERY_TITLE = "Query Results (enter a workload)";
     public static final String NO_FILE = "Please select a file first";
-
-    private final MainWindow parent;
 
     private PerformanceData performanceData;
     public void setPerformanceData(PerformanceData data) {
@@ -37,11 +35,11 @@ public class ModelPanel extends JPanel {
 
     private final JButton startButton;
 
-    public ModelPanel(final MainWindow parent) {
+    private ModelEnsemble ensemble;
+
+    public ModelPanel() {
         super();
-        this.parent = parent;
-        this.setLayout(new BorderLayout ());
-        this.setBorder(Util.createBorder(TITLE));
+        this.setLayout(new BorderLayout());
 
         startButton = new JButton(NO_FILE);
         startButton.setEnabled(false);
@@ -50,7 +48,6 @@ public class ModelPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                ModelEnsemble ensemble = null;
                 try {
                     ensemble = new ModelEnsemble(performanceData,
                                     Preferences.getInstance().getAsArray(Preferences.ENABLED_MODELS));
@@ -64,57 +61,8 @@ public class ModelPanel extends JPanel {
                 } catch (ClassNotFoundException e1) {
                     e1.printStackTrace();
                 }
-
-                //for (JCheckBox box : checkboxes) box.setEnabled(false);
-
-                /*for (Iterator<PerformanceData> performanceDataIterator = performanceDatas.iterator(); performanceDataIterator.hasNext();) {
-
-                    final PerformanceData perfData = performanceDataIterator.next();
-
-                    for (Map.Entry<String, List<DataValue>> entry : perfData.getMetrics().entrySet()) {
-
-                        final String metric             = entry.getKey();
-                        final List<DataValue> values    = entry.getValue();
-
-                        ModelEnsemble ensemble = null;
-
-                        try {
-                            ensemble = new ModelEnsemble(
-                                    values, Preferences.getInstance().getAsArray(Preferences.ENABLED_MODELS));
-
-                            ensemble.addPropertyChangeListener(new PropertyChangeListener() {
-
-                                @Override
-                                public void propertyChange(PropertyChangeEvent evt) {
-
-                                    IEnsembleModel model = (IEnsembleModel) evt.getNewValue();
-
-                                    System.out.println(evt.getPropertyName() +" "+
-                                            perfData.getProcess() +" "+
-                                            metric +" "+
-                                            model.getLastInput().getValue() +" "+
-                                            model.getLastPrediction() +" "+
-                                            model.getError());
-
-                                    ModelPanel.this.firePropertyChange(evt.getPropertyName(), null, new ModelResult(
-                                            perfData.getProcess(),
-                                            metric,
-                                            model.getLastInput().getValue(),
-                                            model.getLastPrediction(),
-                                            model.getError()
-                                    ));
-                                }
-                            });
-
-                            ensemble.start();
-                        } catch (ClassNotFoundException e1) {
-                            e1.printStackTrace();
-                        }
-                    }
-                }*/
             }
         });
-
 
         // Set up Checkboxes
         for (String modelName : Preferences.getInstance().get(Preferences.ALL_MODELS).split(",")) {
@@ -146,14 +94,36 @@ public class ModelPanel extends JPanel {
 
         }
 
+        final JTextField workloadField = new JTextField(20);
+        JButton query = new JButton("Query");
+        query.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String input = workloadField.getText();
+                int workload = Integer.parseInt(input);
+                ensemble.setNextWorkload(workload);
+            }
+        });
+
+
+        JPanel queryPanel = new JPanel();
+        queryPanel.setBorder(Util.createBorder(QUERY_TITLE));
+        queryPanel.add(workloadField);
+        queryPanel.add(query);
 
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
         for (JCheckBox box : checkboxes) container.add(box);
         //container.add(movingAverage);
         container.add(startButton);
-        this.add(container);
 
+        JPanel ensemblePanel = new JPanel();
+        ensemblePanel.setLayout(new BorderLayout ());
+        ensemblePanel.setBorder(Util.createBorder(ENSEMBLE_TITLE));
+        ensemblePanel.add(container);
+
+        this.add(ensemblePanel, BorderLayout.CENTER);
+        this.add(queryPanel, BorderLayout.SOUTH);
     }
 
     @Override

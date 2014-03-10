@@ -49,7 +49,7 @@ public class MainWindow implements PropertyChangeListener {
         inputPanel.addPropertyChangeListener(this);
         centerPanel.add(inputPanel);
 
-        modelPanel = new ModelPanel(this);
+        modelPanel = new ModelPanel();
         modelPanel.addPropertyChangeListener(this);
         centerPanel.add(modelPanel);
 

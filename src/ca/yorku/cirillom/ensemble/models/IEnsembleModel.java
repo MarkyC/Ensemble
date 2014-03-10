@@ -39,6 +39,8 @@ public interface IEnsembleModel {
      */
     public List<ModelResult> getResults();
 
+    public List<ModelResult> predict(int workload);
+
     /**
      * Returns the second latest computed result. This is separate from getNextPrediction() because this result
      * can be compared to gathered input to compute this modellers accuracy

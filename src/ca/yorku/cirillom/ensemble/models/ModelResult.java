@@ -13,15 +13,17 @@ package ca.yorku.cirillom.ensemble.models;
  */
 public class ModelResult {
 
+    private final int workload;
     private String process;
     private String metric;
     private double actualValue;
     private double computedValue;
     private double errorPercent;
 
-    public ModelResult(String process, String metric, double actualValue, double computedValue, double errorPercent) {
+    public ModelResult(String process, String metric, int workload, double actualValue, double computedValue, double errorPercent) {
         this.process = process;
         this.metric = metric;
+        this.workload = workload;
         this.actualValue = actualValue;
         this.computedValue = computedValue;
         this.errorPercent = errorPercent;
@@ -33,6 +35,10 @@ public class ModelResult {
 
     public String getMetric() {
         return metric;
+    }
+
+    public int getWorkload() {
+        return workload;
     }
 
     public double getActualValue() {

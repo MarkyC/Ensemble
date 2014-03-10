@@ -34,6 +34,7 @@ public class ResultPanel extends JPanel {
                 "Modeller",
                 "Process",
                 "Metric",
+                "Workload",
                 "Actual Value",
                 "Computed Value",
                 "Error%"};
@@ -60,24 +61,26 @@ public class ResultPanel extends JPanel {
         for (ModelResult result : results) {
             boolean found = false;
 
-            for (int i = 0; i < m.getRowCount(); i++) {
+            /*for (int i = 0; i < m.getRowCount(); i++) {
                 if ( (m.getValueAt(i, 0).equals(modelName) &&
                         m.getValueAt(i, 1).equals(result.getProcess())) &&
                         (m.getValueAt(i, 2).equals(result.getMetric())) ) {
 
-                    m.setValueAt(result.getActualValue(),               i, 3);
-                    m.setValueAt(result.getComputedValue(),             i, 4);
-                    m.setValueAt(makePercent(result.getErrorPercent()), i, 5); // multiply by 100 for percent
+                    m.setValueAt(result.getWorkload(),                  i, 4);
+                    m.setValueAt(result.getActualValue(),               i, 4);
+                    m.setValueAt(result.getComputedValue(),             i, 5);
+                    m.setValueAt(makePercent(result.getErrorPercent()), i, 6); // multiply by 100 for percent
                     found = true;
 
                 }
-            }
+            }*/
 
             if (!found) {
                 m.addRow(new Object[] {
                         modelName,
                         result.getProcess(),
                         result.getMetric(),
+                        result.getWorkload(),
                         result.getActualValue(),
                         result.getComputedValue(),
                         result.getErrorPercent()+"%"});
