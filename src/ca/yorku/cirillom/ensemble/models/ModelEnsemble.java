@@ -14,22 +14,7 @@ public class ModelEnsemble extends Thread  {
     private final PerformanceData performanceData;
 
     private Map<String, IEnsembleModel> models = new LinkedHashMap<>();
-    /*public void addModel(String name) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-        if (availableModels.containsKey(name)) {
-            ensemble.put(name, (IEnsembleModel) availableModels.get(name).newInstance());
-        } else {
-            throw new ClassNotFoundException("Model for " + name + " not found.");
-        }
-    }*/
-
     private Map<String, IEnsembleModel> ensemble = new LinkedHashMap<>();
-    /*public void addModelToEnsemble(String name) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-        if (availableModels.containsKey(name)) {
-            ensemble.put(name, (IEnsembleModel) availableModels.get(name).newInstance());
-        } else {
-            throw new ClassNotFoundException("Model for " + name + " not found.");
-        }
-    }*/
 
     private List<PropertyChangeListener> listeners = new ArrayList<>();
 
@@ -46,25 +31,6 @@ public class ModelEnsemble extends Thread  {
             p.propertyChange(new PropertyChangeEvent(this, propertyName, previousResult, result));
         }
     }
-
-    /**
-     * List of Models this ModelEnsemble Supports
-     */
-    /*public static final Map<String, Class> availableModels = new LinkedHashMap<>();
-    static {
-        availableModels.put(Preferences.MOVING_AVERAGE, MovingAverageModel.class);
-        availableModels.put(Preferences.LINEAR_REGRESSION, LinearRegressionModel.class);
-    }*/
-
-    /*public ModelEnsemble() {
-        this(new ArrayList<DataValue>());
-    }
-
-    public ModelEnsemble(List<DataValue> data) {
-
-        // Initialize with the availableModels and the passed input
-        this(data, availableModels.keySet().toArray(new String[1]));
-    }*/
 
     public ModelEnsemble(PerformanceData perfData, String[] models) throws ClassNotFoundException {
         this.performanceData = perfData;//new ArrayList<>(data);
