@@ -1,5 +1,8 @@
 package ca.yorku.cirillom.ensemble.preferences;
 
+import ca.yorku.cirillom.ensemble.models.LinearRegressionModel;
+import ca.yorku.cirillom.ensemble.models.MovingAverageModel;
+
 import java.io.*;
 import java.util.*;
 
@@ -23,8 +26,8 @@ public class Preferences {
     public static final String ALL_MODELS = "all-models";
     public static final String ENABLED_MODELS = "enabled-models";
 
-    public static final String MOVING_AVERAGE       = "moving-average";
-    public static final String LINEAR_REGRESSION    = "linear-regression";
+    public static final String MOVING_AVERAGE       = MovingAverageModel.class.getSimpleName();
+    public static final String LINEAR_REGRESSION    = LinearRegressionModel.class.getSimpleName();
 
     private static final String DEFAULT_MODELS = MOVING_AVERAGE + ", " + LINEAR_REGRESSION;
 
@@ -148,7 +151,7 @@ public class Preferences {
      * @return Value associated with key, or null if no such value exists
      */
     public synchronized String get(String key) {
-        return prop.get(key).toString();
+        return prop.get(key).toString().trim();
     }
     public String[] getAsArray(String key) {
         return get(key).split(", ");

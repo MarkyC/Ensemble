@@ -128,7 +128,7 @@ public class MovingAverageModel implements IEnsembleModel {
 
     public List<ModelResult> predict(int workload) {
         List<ModelResult> results = new ArrayList<>(getResults().size());
-        for (ModelResult mr : getResults()) {
+        for (ModelResult mr : model()) {
             mr.setWorkload(workload);
             results.add(mr);
         }

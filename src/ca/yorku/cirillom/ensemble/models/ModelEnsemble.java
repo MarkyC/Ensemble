@@ -1,5 +1,7 @@
 package ca.yorku.cirillom.ensemble.models;
 
+import ca.yorku.cirillom.ensemble.preferences.Preferences;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
@@ -13,12 +15,21 @@ public class ModelEnsemble extends Thread  {
 
     private final PerformanceData performanceData;
 
-    private Map<String, IEnsembleModel> models = new LinkedHashMap<>();
+    private List<IEnsembleModel> models = new ArrayList<>();
+
+    //private Map<String, IEnsembleModel> models = new LinkedHashMap<>();
     private Map<String, IEnsembleModel> ensemble = new LinkedHashMap<>();
 
     private List<PropertyChangeListener> listeners = new ArrayList<>();
 
     private int nextWorkload = 0;
+
+    /**
+     * Number of samples to run for each iteration of modelling.
+     * After sampleWindow is hit, the ModelEnsemble will offer a prediction for the (sampleWindow + 1)'th result
+     */
+    public final int sampleWindow = 30;
+
     public void setNextWorkload(int nextWorkload) {
         this.nextWorkload = nextWorkload;
     }
@@ -26,26 +37,35 @@ public class ModelEnsemble extends Thread  {
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         this.listeners.add(listener);
     }
-    public void notifyListeners(String propertyName, List<ModelResult> previousResult, List<ModelResult> result) {
+    public void notifyListeners(String propertyName, Object previousResult, Object result) {
         for (PropertyChangeListener p : listeners) {
             p.propertyChange(new PropertyChangeEvent(this, propertyName, previousResult, result));
         }
     }
 
-    public ModelEnsemble(PerformanceData perfData, String[] models) throws ClassNotFoundException {
-        this.performanceData = perfData;//new ArrayList<>(data);
-        for ( String model : models ) {
-            //addModel(model);
-            switch(model.trim()) {
-                case "moving-average":
-                    this.models.put("moving-average", new MovingAverageModel());
-                break;
-                case "linear-regression":
-                    this.models.put("linear-regression", new LinearRegressionModel());
-                break;
-                default:
-                    throw new ClassNotFoundException("Cannot find class " + model);
-            }
+    private IEnsembleModel getModelByName(String name) throws ClassNotFoundException {
+        if ( name.equals(MovingAverageModel.class.getSimpleName()) ) {
+            return new MovingAverageModel();
+        } else if ( name.equals(LinearRegressionModel.class.getSimpleName()) ) {
+            return new LinearRegressionModel();
+        } else {
+            throw new ClassNotFoundException("Could not find Model for " + name);
+        }
+    }
+
+    public ModelEnsemble(PerformanceData perfData) throws RuntimeException {
+        this.performanceData = perfData;
+
+        // Add IEnsembleModels to models collection
+        String[] rawModels = Preferences.getInstance().getAsArray(Preferences.ENABLED_MODELS);
+        for (String modelName : rawModels) {
+            try {
+                models.add(getModelByName(modelName.trim()));
+            } catch (ClassNotFoundException e) { /*  No need to fail if we're given one bad model... */ }
+        }
+
+        if ( 1 > models.size() ) {
+            throw new RuntimeException("No valid models to run.");
         }
 
     }
@@ -62,17 +82,35 @@ public class ModelEnsemble extends Thread  {
     @Override
     public void run() {
 
-        //int offset  = 0;
 
-        // loop until interrupted
-        //while ( !this.isInterrupted() ) {
+        List<DataValue> dataValues = performanceData.getDataValues();
 
-            // cat nap
-            /*try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }*/
+        // Run the next `sampleWindow` amount of samples, stop when we run out of future samples tom compare against
+        for (int offset = 0; (dataValues.size() - offset) > sampleWindow; offset += sampleWindow) {
+
+            // visit the next sampleWindow-many DataValues
+            for (int i = 0; i < sampleWindow; i++) {
+                DataValue value = dataValues.get(offset + i);
+
+                // Add DataValue to each model
+                for (IEnsembleModel model : models) {
+                    model.addInput(value);
+                }
+            }
+
+            // predict the next (sampleWindow+i'th) sample
+            DataValue nextValue = dataValues.get(offset + sampleWindow + 1);
+            for (IEnsembleModel model : models) {
+                List<ModelResult> result = model.predict(nextValue.getWorkload());
+                this.notifyListeners(model.getClass().getSimpleName(), result, result);
+            }
+
+        }
+
+    }
+
+/*    @Override
+    public void run() {
 
         for ( Iterator<DataValue> it = performanceData.getDataValues().iterator(); it.hasNext(); ) {
             DataValue dataValue = it.next();
@@ -121,67 +159,5 @@ public class ModelEnsemble extends Thread  {
                 this.nextWorkload = 0;
             }
         }
-
-
-
-            /*for (Map.Entry<String, IEnsembleModel> entry : models.entrySet()) {
-                String name         = entry.getKey();
-                IEnsembleModel model= entry.getValue();
-
-                if (offset > data.size() - 1) {
-
-                    // we've exhausted the input input, close the model solver
-                    System.out.println("Input exhausted, ending ensemble");
-                    this.interrupt();
-
-                } else {
-
-                    // get the latest input value and add to the model
-                    DataValue value = data.get(offset);
-                    model.addInput(value);
-                }
-
-                model.model();
-                this.notifyListeners(name, model);
-            }*/
-
-/*
-                // addInput DataValue to all models
-                for (String modeller : models.keySet())     models.get(modeller).addInput(value);
-                for (String modeller : ensemble.keySet())   ensemble.get(modeller).addInput(value);
-
-
-                // compute next value for all models
-                for (String modeller : models.keySet())     models.get(modeller).model();
-                for (String modeller : ensemble.keySet())   ensemble.get(modeller).model();
-
-                // Fire off listeners
-                for (String modeller : models.keySet())     this.notifyListeners(models.get(modeller));
-                for (String modeller : ensemble.keySet())   this.notifyListeners(ensemble.get(modeller));
-
-                // If accuracy for any model is higher than all in the ensemble, addInput to ensemble
-                for (Iterator<Map.Entry<String, IEnsembleModel>> iterator = models.entrySet().iterator(); iterator.hasNext(); ) {
-
-                    Map.Entry<String, IEnsembleModel> entry = iterator.next();
-
-                    String metric           = entry.getKey();
-                    IEnsembleModel model    = entry.getValue();
-                    boolean addToEnsemble   = true;
-
-                    for (IEnsembleModel e : ensemble.values()) {
-                        if (model.getError() < e.getError() ) {
-                            addToEnsemble = false;
-                        }
-                    }
-
-                    if (addToEnsemble) {
-                        ensemble.put(metric, model);
-                        iterator.remove();
-                    }
-                } // End addInput to ensemble if accuracy is higher
-*/
-
-            //++offset; // increment offset for next iteration
-        //} // end while
-    }
+    }*/
 }

@@ -49,8 +49,7 @@ public class ModelPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
 
                 try {
-                    ensemble = new ModelEnsemble(performanceData,
-                                    Preferences.getInstance().getAsArray(Preferences.ENABLED_MODELS));
+                    ensemble = new ModelEnsemble(performanceData);
                     ensemble.addPropertyChangeListener(new PropertyChangeListener() {
                         @Override
                         public void propertyChange(PropertyChangeEvent evt) {
@@ -60,14 +59,14 @@ public class ModelPanel extends JPanel {
                         }
                     });
                     ensemble.start();
-                } catch (ClassNotFoundException e1) {
+                } catch (Exception e1) {
                     e1.printStackTrace();
                 }
             }
         });
 
         // Set up Checkboxes
-        for (String modelName : Preferences.getInstance().get(Preferences.ALL_MODELS).split(",")) {
+        for (String modelName : Preferences.getInstance().getAsArray(Preferences.ALL_MODELS)) {
             final JCheckBox box = new JCheckBox(modelName);
 
             box.setName(modelName);
