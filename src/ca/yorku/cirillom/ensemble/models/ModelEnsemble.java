@@ -13,6 +13,8 @@ import java.util.*;
  */
 public class ModelEnsemble extends Thread  {
 
+    public static final String FINISHED         = "finished";
+    public static final String ENSEMBLE_RESULT  = "ensemble-result";
     private final PerformanceData performanceData;
 
     private List<IEnsembleModel> models = new ArrayList<>();
@@ -84,9 +86,11 @@ public class ModelEnsemble extends Thread  {
 
 
         List<DataValue> dataValues = performanceData.getDataValues();
+        int size = dataValues.size();
+        int resultNumber = 1;
 
         // Run the next `sampleWindow` amount of samples, stop when we run out of future samples tom compare against
-        for (int offset = 0; (dataValues.size() - offset) > sampleWindow; offset += sampleWindow) {
+        for (int offset = 0; (size - offset) > sampleWindow; offset += sampleWindow, resultNumber++) {
 
             // visit the next sampleWindow-many DataValues
             for (int i = 0; i < sampleWindow; i++) {
@@ -98,14 +102,22 @@ public class ModelEnsemble extends Thread  {
                 }
             }
 
+
             // predict the next (sampleWindow+i'th) sample
             DataValue nextValue = dataValues.get(offset + sampleWindow + 1);
             for (IEnsembleModel model : models) {
                 List<ModelResult> result = model.predict(nextValue.getWorkload());
-                this.notifyListeners(model.getClass().getSimpleName(), result, result);
-            }
+                for (ModelResult r : result) {
 
+                    r.setResultNumber(resultNumber);
+                    r.setModeller(model.getClass().getSimpleName());
+                    this.notifyListeners("model-result", r, r);
+                }
+                //this.notifyListeners(model.getClass().getSimpleName(), result, result);
+            }
         }
+
+        this.notifyListeners(FINISHED, false, true);
 
     }
 

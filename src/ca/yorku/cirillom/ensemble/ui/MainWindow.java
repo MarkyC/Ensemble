@@ -1,11 +1,13 @@
 package ca.yorku.cirillom.ensemble.ui;
 
+import ca.yorku.cirillom.ensemble.models.ModelEnsemble;
 import ca.yorku.cirillom.ensemble.models.ModelResult;
 import ca.yorku.cirillom.ensemble.models.PerformanceData;
 import ca.yorku.cirillom.ensemble.preferences.Preferences;
 import ca.yorku.cirillom.ensemble.ui.panels.InputPanel;
 import ca.yorku.cirillom.ensemble.ui.panels.ModelPanel;
 import ca.yorku.cirillom.ensemble.ui.panels.ResultPanel;
+import ca.yorku.cirillom.ensemble.util.EnsembleTSVWriter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,6 +33,8 @@ public class MainWindow implements PropertyChangeListener {
     private InputPanel inputPanel;
     private ModelPanel modelPanel;
     private ResultPanel resultPanel;
+
+    private EnsembleTSVWriter output = new EnsembleTSVWriter();
 
     public MainWindow() {
         init();
@@ -79,7 +83,20 @@ public class MainWindow implements PropertyChangeListener {
             modelPanel.setEnabled(true);
         } else if (Preferences.getInstance().getAsList(Preferences.ENABLED_MODELS).contains(event.getPropertyName()) &&
                 event.getNewValue() instanceof List) {
-            resultPanel.updateResult(event.getPropertyName(), (List<ModelResult>) event.getNewValue());
+            List<ModelResult> result = (List<ModelResult>) event.getNewValue();
+
+            // Update the GUI
+            resultPanel.updateResult( event.getPropertyName(), result );
+
+            // Update the ouput TSV
+            //output.addModelResults(result);
+
+        } else if (ModelEnsemble.FINISHED.equals(event.getPropertyName())) {
+            output.write();
+        } else if ("model-result".equals(event.getPropertyName())) {
+            // Update the ouput TSV
+            output.addModelResult((ModelResult) event.getNewValue());
+            System.out.println(event.getNewValue());
         }
     }
 }

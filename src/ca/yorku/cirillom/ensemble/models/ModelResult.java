@@ -14,11 +14,13 @@ package ca.yorku.cirillom.ensemble.models;
 public class ModelResult {
 
     private int workload;
+    private String modeller;
     private String process;
     private String metric;
     private double actualValue;
     private double computedValue;
     private double errorPercent;
+    private int resultNumber = 0;
 
     public ModelResult(String process, String metric, int workload, double actualValue, double computedValue, double errorPercent) {
         this.process = process;
@@ -57,11 +59,49 @@ public class ModelResult {
         this.workload = workload;
     }
 
+    public int getResultNumber() {
+        return resultNumber;
+    }
+
+    public void setResultNumber(int resultNumber) {
+        this.resultNumber = resultNumber;
+    }
+
+    public void setProcess(String process) {
+        this.process = process;
+    }
+
+    public void setMetric(String metric) {
+        this.metric = metric;
+    }
+
+    public void setActualValue(double actualValue) {
+        this.actualValue = actualValue;
+    }
+
+    public void setComputedValue(double computedValue) {
+        this.computedValue = computedValue;
+    }
+
+    public void setErrorPercent(double errorPercent) {
+        this.errorPercent = errorPercent;
+    }
+
+    public String getModeller() {
+        return modeller;
+    }
+
+    public void setModeller(String modeller) {
+        this.modeller = modeller;
+    }
+
 
     @Override
     public String toString() {
         return "ModelResult{" +
-                "process='" + process + '\'' +
+                "modeller='" + modeller + '\'' +
+                ", process='" + process + '\'' +
+                ", result#='" + resultNumber + '\'' +
                 ", metric='" + metric + '\'' +
                 ", actualValue=" + actualValue +
                 ", computedValue=" + computedValue +
