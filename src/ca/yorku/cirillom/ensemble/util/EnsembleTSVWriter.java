@@ -47,22 +47,41 @@ public class EnsembleTSVWriter {
                 Integer resultNumber                        = next.getKey();
                 List<ModelResult> mr                        = next.getValue();
 
+                //System.out.println(mr.size());
+                //for (ModelResult r : mr) System.out.println(r);
+
                 double totalAccuracy = 0;
                 for (ModelResult r : mr) {
                     totalAccuracy += 1 - accuracy(r.getActualValue(), r.getComputedValue());
-                    //System.out.println(1 - accuracy(r.getActualValue(), r.getComputedValue())+ " " +totalAccuracy);
+                    //System.out.println(r.getComputedValue()+ " " + r.getActualValue()+ " " + " " + accuracy(r.getActualValue(), r.getComputedValue()) + " " +(1 - accuracy(r.getActualValue(), r.getComputedValue()))+ " " +totalAccuracy);
                 }
 
+                double bagging = 0;
+                double stacking = 0;
                 for (ModelResult r : mr) {
-                    double bagging = 0.5 * r.getComputedValue();
-                    double stacking= (( 1 - accuracy(r.getActualValue(), r.getComputedValue()) ) / totalAccuracy)
+                    /*if (("mysqld".equals(r.getProcess())) && "% Processor Time".equals(r.getMetric())) {
+                        System.out.println(r.getModeller() + " Computed=" + r.getComputedValue() + ", Actual=" + r.getActualValue());
+                        System.out.println("bagging = 0.5 * " + r.getComputedValue() + " = " + 0.5 * r.getComputedValue());
+                        System.out.println("stacking = (1-" +
+                                accuracy(r.getActualValue(), r.getComputedValue()) + "/" + totalAccuracy + ") * " +
+                                r.getComputedValue() + " = " +
+                                ((( 1 - accuracy(r.getActualValue(), r.getComputedValue()) ) / totalAccuracy)
+                                        * r.getComputedValue()));
+                    }*/
+
+                    bagging += 0.5 * r.getComputedValue();
+                    stacking+= (( 1 - accuracy(r.getActualValue(), r.getComputedValue()) ) / totalAccuracy)
                                          * r.getComputedValue();
+                }
 
-                    //System.out.println(new EnsembleTSVRow(resultNumber, "stacking", r.getProcess(), r.getMetric(), stacking, r.getActualValue()));
-                    //System.out.println(new EnsembleTSVRow(resultNumber, "bagging", r.getProcess(), r.getMetric(), bagging, r.getActualValue()));
-                 }
+                ModelResult r1 = mr.get(0);
+                /*if (("mysqld".equals(r1.getProcess())) && "% Processor Time".equals(r1.getMetric())) {*/
+                    System.out.println(new EnsembleTSVRow(resultNumber, "stacking", r1.getProcess(), r1.getMetric(), stacking, r1.getActualValue()));
+                    System.out.println(new EnsembleTSVRow(resultNumber, "bagging", r1.getProcess(), r1.getMetric(), bagging, r1.getActualValue()));
+                    System.out.println(new EnsembleTSVRow(resultNumber, "actual", r1.getProcess(), r1.getMetric(), r1.getActualValue(), r1.getActualValue()));
 
-                //System.out.println();
+                    System.out.println();
+                //}
             }
 
 
@@ -78,7 +97,7 @@ public class EnsembleTSVWriter {
     }
 
     private static double accuracy(double actual, double predicted) {
-        return Math.max( Math.abs(predicted-actual)/actual, 1 );
+        return Math.min( Math.abs(predicted-actual)/Math.abs(actual), 1 );
     }
 
     private static Map<Integer, List<ModelResult>> splitByResultNumber(List<ModelResult> theModelResults) {

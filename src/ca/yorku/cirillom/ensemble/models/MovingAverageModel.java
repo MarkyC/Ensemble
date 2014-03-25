@@ -2,6 +2,7 @@ package ca.yorku.cirillom.ensemble.models;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -102,6 +103,7 @@ public class MovingAverageModel implements IEnsembleModel {
             }
         }
 
+
         // Create ModelResult Array based on computed results
         List<ModelResult> results = new ArrayList<>();
         List<Metric> metrics = input.getLast().getMetrics();
@@ -110,6 +112,11 @@ public class MovingAverageModel implements IEnsembleModel {
             Metric metric = metrics.get(i);
 
             double computedResult = computedResults.get(i) / size;
+
+            /*if (metric.getName().equals("% Processor Time")) {
+                System.out.print(computedResults);
+                System.out.println(metric.getValue() + " " + computedResult);
+            }*/
 
             // Create results
             results.add(new ModelResult(
@@ -127,6 +134,44 @@ public class MovingAverageModel implements IEnsembleModel {
     }
 
     public List<ModelResult> predict(int workload) {
+
+        List<Double> predictions = new ArrayList<>();
+
+        for (Iterator<DataValue> it = input.iterator(); it.hasNext(); ) {
+            List<Metric> metrics = it.next().getMetrics();
+            for (int i = 0; i < metrics.size(); i++) {
+                if (i >= predictions.size()) {
+                    predictions.add(i, metrics.get(i).getValue());
+                } else {
+                    predictions.set(i, predictions.get(i) + metrics.get(i).getValue());
+                }
+            }
+        }
+
+        for (int i = 0; i < predictions.size(); i++) {
+            predictions.set(i, predictions.get(i)/input.size());
+        }
+
+        List<ModelResult> results = new ArrayList<>();
+
+        List<Metric> metrics = input.getLast().getMetrics();
+        for (int i = 0; i < metrics.size(); i++) {
+            Metric metric = metrics.get(i);
+            ModelResult mr = new ModelResult(
+                    metric.getProcess(),
+                    metric.getName(),
+                    input.getLast().getWorkload(),
+                    metric.getValue(),
+                    predictions.get(i),
+                    getError(metric.getValue(), predictions.get(i))
+            );
+            results.add(mr);
+        }
+
+        return results;
+    }
+
+    /*public List<ModelResult> predict(int workload) {
         List<ModelResult> results = new ArrayList<>(getResults().size());
         for (ModelResult mr : model()) {
             mr.setWorkload(workload);
@@ -134,7 +179,7 @@ public class MovingAverageModel implements IEnsembleModel {
         }
 
         return results;
-    }
+    }*/
 
     public double getError(double predicted, double actual) {
         return Math.abs(predicted - actual)/actual;

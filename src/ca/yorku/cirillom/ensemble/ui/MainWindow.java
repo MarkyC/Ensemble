@@ -96,7 +96,6 @@ public class MainWindow implements PropertyChangeListener {
         } else if ("model-result".equals(event.getPropertyName())) {
             // Update the ouput TSV
             output.addModelResult((ModelResult) event.getNewValue());
-            System.out.println(event.getNewValue());
         }
     }
 }

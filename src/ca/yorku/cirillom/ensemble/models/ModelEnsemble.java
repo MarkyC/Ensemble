@@ -109,6 +109,12 @@ public class ModelEnsemble extends Thread  {
                 List<ModelResult> result = model.predict(nextValue.getWorkload());
                 for (ModelResult r : result) {
 
+                    // set the actual observed value
+                    for (Metric m : nextValue.getMetrics()) {
+                        if ((m.getProcess().equals(r.getProcess())) && m.getName().equals(r.getMetric())) {
+                            r.setActualValue(m.getValue());
+                        }
+                    }
                     r.setResultNumber(resultNumber);
                     r.setModeller(model.getClass().getSimpleName());
                     this.notifyListeners("model-result", r, r);
@@ -120,56 +126,4 @@ public class ModelEnsemble extends Thread  {
         this.notifyListeners(FINISHED, false, true);
 
     }
-
-/*    @Override
-    public void run() {
-
-        for ( Iterator<DataValue> it = performanceData.getDataValues().iterator(); it.hasNext(); ) {
-            DataValue dataValue = it.next();
-
-            for (Map.Entry<String, IEnsembleModel> entry : models.entrySet()) {
-                String name         = entry.getKey();
-                IEnsembleModel model= entry.getValue();
-
-                model.addInput(dataValue);
-                model.model();
-                //this.notifyListeners(name, model.getResults(), model.model());
-            }
-        }
-
-        for (Map.Entry<String, IEnsembleModel> entry : models.entrySet()) {
-            String name         = entry.getKey();
-            IEnsembleModel model= entry.getValue();
-
-
-            int[] toPredict = {10, 25, 50, 100};
-            for (int workload : toPredict) {
-                this.notifyListeners(name, model.getResults(), model.predict(workload));
-            }
-        }
-
-        while ( !this.isInterrupted() ) {
-
-            // cat nap
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            if (0 != this.nextWorkload) {
-
-                System.out.println("next workload: " +nextWorkload);
-
-                for (Map.Entry<String, IEnsembleModel> entry : models.entrySet()) {
-                    String name         = entry.getKey();
-                    IEnsembleModel model= entry.getValue();
-
-                    this.notifyListeners(name, model.getResults(), model.predict(this.nextWorkload));
-                }
-
-                this.nextWorkload = 0;
-            }
-        }
-    }*/
 }
