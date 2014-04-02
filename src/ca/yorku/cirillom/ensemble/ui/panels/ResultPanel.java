@@ -66,7 +66,7 @@ public class ResultPanel extends JPanel {
                         m.getValueAt(i, 1).equals(result.getProcess())) &&
                         (m.getValueAt(i, 2).equals(result.getMetric())) ) {
 
-                    m.setValueAt(result.getWorkload(),                  i, 4);
+                    m.setValueAt(result.getTotalWorkload(),                  i, 4);
                     m.setValueAt(result.getActualValue(),               i, 4);
                     m.setValueAt(result.getComputedValue(),             i, 5);
                     m.setValueAt(makePercent(result.getErrorPercent()), i, 6); // multiply by 100 for percent

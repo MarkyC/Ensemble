@@ -109,7 +109,7 @@ public class ModelEnsemble extends Thread  {
             // predict the next (sampleWindow+i'th) sample
             DataValue nextValue = dataValues.get(offset + sampleWindow + 1);
             for (IEnsembleModel model : models) {
-                List<ModelResult> result = model.predict(nextValue.getWorkload());
+                List<ModelResult> result = model.predict(nextValue.getTotalWorkload());
                 for (ModelResult r : result) {
 
                     // set the actual observed value

@@ -126,7 +126,7 @@ public class MovingAverageModel implements IEnsembleModel {
             results.add(new ModelResult(
                     metric.getProcess(),
                     metric.getName(),
-                    input.getLast().getWorkload(),
+                    input.getLast().getTotalWorkload(),
                     metric.getValue(),
                     computedResult,
                     getError(metric.getValue(), computedResult)
@@ -164,7 +164,7 @@ public class MovingAverageModel implements IEnsembleModel {
             ModelResult mr = new ModelResult(
                     metric.getProcess(),
                     metric.getName(),
-                    input.getLast().getWorkload(),
+                    input.getLast().getTotalWorkload(),
                     metric.getValue(),
                     predictions.get(i),
                     getError(metric.getValue(), predictions.get(i))

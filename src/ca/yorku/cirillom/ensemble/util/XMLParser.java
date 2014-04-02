@@ -3,6 +3,7 @@ package ca.yorku.cirillom.ensemble.util;
 import ca.yorku.cirillom.ensemble.models.DataValue;
 import ca.yorku.cirillom.ensemble.models.Metric;
 import ca.yorku.cirillom.ensemble.models.PerformanceData;
+import ca.yorku.cirillom.ensemble.models.Workload;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -30,6 +31,19 @@ import java.util.List;
  */
 public class XMLParser extends SwingWorker<PerformanceData, Integer> {
 
+    /* PerformanceData.xml Node/Attribute constants */
+    public static final String METRIC       = "Metric";
+    public static final String WORKLOAD     = "Workload";
+    public static final String DATA_VALUE   = "DataValue";
+    public static final String NAME         = "name";
+    public static final String PROCESS      = "process";
+    public static final String DATE_PATTERN = "yyyy/MM/dd HH:mm:ss";
+    public static final String START_TIME   = "startTime";
+    public static final String END_TIME     = "endTime";
+
+    /* Used to indicate progress so MainWindow can update the ProgressWindow */
+    public static final String PROGRESS = "progress";
+
     private final File file;
     private List<PropertyChangeListener> listeners = new ArrayList<>();
 
@@ -52,44 +66,52 @@ public class XMLParser extends SwingWorker<PerformanceData, Integer> {
             Document xml = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file);
             xml.getDocumentElement().normalize();   // Normalize to prevent bugs
 
-            int numMetrics      = 0; // Number of Metrics Processed
-            int totalMetrics    = xml.getElementsByTagName("Metric").getLength(); // Total Number of Metrics
+            int progress      = 0;  // Number of Metrics and Workloads Processed
+            int totalProgress = xml.getElementsByTagName(METRIC).getLength()
+                                + xml.getElementsByTagName(WORKLOAD).getLength(); // Total Number of Metrics
 
-            NodeList dataValueNodes = xml.getElementsByTagName("DataValue");
+            NodeList dataValueNodes = xml.getElementsByTagName(DATA_VALUE);
 
             for (int i = 0; i < dataValueNodes.getLength();i++) {
 
                 // get item for this iteration
                 Node dataValueNode = dataValueNodes.item(i);
 
-                // Child Nodes should be Metrics
-                NodeList metricNodes = dataValueNode.getChildNodes();
+                // Child Nodes should be Metrics and Workloads
+                NodeList children = dataValueNode.getChildNodes();
 
                 // Fill Metric List for this DataValue
-                List<Metric> metrics = new ArrayList<>();
-                for (int j = 0; j < metricNodes.getLength(); j++) {
-                    Node metricNode = metricNodes.item(j);
+                List<Metric> metrics    = new ArrayList<>();
+                List<Workload> workloads= new ArrayList<>();
 
-                    if ( "Metric".equals(metricNode.getNodeName()) ) {
-                        NamedNodeMap attributes = metricNode.getAttributes();
-                        String name     = attributes.getNamedItem("name").getTextContent();
-                        String process  = attributes.getNamedItem("process").getTextContent();
-                        double value    = Double.parseDouble(metricNode.getTextContent());
+                for (int j = 0; j < children.getLength(); j++) {
+                    Node child = children.item(j);
+
+                    if ( METRIC.equals(child.getNodeName()) ) {
+                        NamedNodeMap attributes = child.getAttributes();
+                        String name     = attributes.getNamedItem(NAME).getTextContent();
+                        String process  = attributes.getNamedItem(PROCESS).getTextContent();
+                        double value    = Double.parseDouble(child.getTextContent());
                         metrics.add(new Metric(name, process, value));
-
-                        // update percent complete
-                        publish(percent(++numMetrics, totalMetrics));
+                    } else if (WORKLOAD.equals(child.getNodeName())) {
+                        NamedNodeMap attributes = child.getAttributes();
+                        String name     = attributes.getNamedItem(NAME).getTextContent();
+                        int requests    = Integer.parseInt(child.getTextContent());
+                        workloads.add(new Workload(name, requests));
                     }
+
+                    // update percent complete
+                    publish(percent(++progress, totalProgress));
                 }
 
                 // Add new DataValue to the List
                 NamedNodeMap attributes = dataValueNode.getAttributes();
-                int workload    = Integer.parseInt(attributes.getNamedItem("workload").getTextContent());
-                Date start      = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").parse(
-                        attributes.getNamedItem("startTime").getTextContent());
-                Date end        = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").parse(
-                                    attributes.getNamedItem("endTime").getTextContent());
-                dataValues.add(new DataValue(workload, start, end, metrics));
+                /*int workload    = Integer.parseInt(attributes.getNamedItem("workload").getTextContent());*/
+                Date start      = new SimpleDateFormat(DATE_PATTERN).parse(
+                        attributes.getNamedItem(START_TIME).getTextContent());
+                Date end        = new SimpleDateFormat(DATE_PATTERN).parse(
+                                    attributes.getNamedItem(END_TIME).getTextContent());
+                dataValues.add(new DataValue(start, end, metrics, workloads));
             }
 
 
@@ -97,29 +119,14 @@ public class XMLParser extends SwingWorker<PerformanceData, Integer> {
             e.printStackTrace();
         }
 
-        // Increment progress
-       /* publish(percent(++currentLine, fileSize));
-
-        // Create List for return
-        this.list = new ArrayList<>();
-        for (Map.Entry<String, PerformanceData> p : perfData.entrySet()) {
-           list.add(p.getValue());
-        }
-
-        this.firePropertyChange("finished", null, true);
-
-        // close ProgressWindow
-        progress.dispose();
-*/
         this.result = new PerformanceData(dataValues);
         return this.result;
-        //return result;
     }
 
     protected void process(final List<Integer> chunks) {
         int last = 0;
         for (final int p : chunks) {
-            this.firePropertyChange("progress", last, p);       // update progress
+            this.firePropertyChange(PROGRESS, last, p);       // update progress
             last = p;                                           // update last value
         }
     }

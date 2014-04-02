@@ -46,12 +46,12 @@ public class LinearRegressionModel implements IEnsembleModel {
             try {
 
                 // Add data to existing SimpleRegression
-                regressions.get(i).addData(input.getWorkload(), metric.getValue());
+                regressions.get(i).addData(input.getTotalWorkload(), metric.getValue());
             } catch (IndexOutOfBoundsException ex) {
 
                 // Create a new SimpleRegression for this index in the list
                 SimpleRegression r = new SimpleRegression();
-                r.addData(input.getWorkload(), metric.getValue());
+                r.addData(input.getTotalWorkload(), metric.getValue());
                 regressions.add(i, r);
             }
         }
@@ -92,13 +92,13 @@ public class LinearRegressionModel implements IEnsembleModel {
         for (int i = 0; i < metrics.size(); i++) {
             Metric metric = metrics.get(i);
 
-            double computedResult = regressions.get(i).predict(latestDataValue.getWorkload());
+            double computedResult = regressions.get(i).predict(latestDataValue.getTotalWorkload());
 
             // Create results
             results.add(new ModelResult(
                     metric.getProcess(),
                     metric.getName(),
-                    latestDataValue.getWorkload(),
+                    latestDataValue.getTotalWorkload(),
                     metric.getValue(),
                     computedResult,
                     regressions.get(i).getMeanSquareError()
@@ -123,7 +123,7 @@ public class LinearRegressionModel implements IEnsembleModel {
 
             double actualValue = Double.NaN;
             for (DataValue v : inputs) {
-                if (v.getWorkload() == workload) {
+                if (v.getTotalWorkload() == workload) {
                     actualValue = v.getMetrics().get(i).getValue();
                 }
             }
@@ -157,7 +157,7 @@ public class LinearRegressionModel implements IEnsembleModel {
                     actuals = new LinkedHashMap<>();
                 }
 
-                actuals.put(input.getWorkload(), metrics.get(i).getValue());
+                actuals.put(input.getTotalWorkload(), metrics.get(i).getValue());
                 results.add(i, actuals);
 
             }
