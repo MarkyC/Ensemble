@@ -59,29 +59,34 @@ public class EnsembleTSVWriter {
                 double bagging = 0;
                 double stacking = 0;
                 for (ModelResult r : mr) {
-                    /*if (("mysqld".equals(r.getProcess())) && "% Processor Time".equals(r.getMetric())) {
+                    if (("Tomcat7".equals(r.getProcess())) && "Private Bytes".equals(r.getMetric())) {
                         System.out.println(r.getModeller() + " Computed=" + r.getComputedValue() + ", Actual=" + r.getActualValue());
                         System.out.println("bagging = 0.5 * " + r.getComputedValue() + " = " + 0.5 * r.getComputedValue());
-                        System.out.println("stacking = (1-" +
-                                accuracy(r.getActualValue(), r.getComputedValue()) + "/" + totalAccuracy + ") * " +
+                        System.out.println("stacking = ((1-" +
+                                accuracy(r.getActualValue(), r.getComputedValue()) + ")/" + totalAccuracy + ") * " +
                                 r.getComputedValue() + " = " +
                                 ((( 1 - accuracy(r.getActualValue(), r.getComputedValue()) ) / totalAccuracy)
                                         * r.getComputedValue()));
-                    }*/
+                    }
 
                     bagging += 0.5 * r.getComputedValue();
                     stacking+= (( 1 - accuracy(r.getActualValue(), r.getComputedValue()) ) / totalAccuracy)
                                          * r.getComputedValue();
                 }
 
+                // Calculate individual model results
+                for (ModelResult r : mr) {
+                    System.out.println(new EnsembleTSVRow(resultNumber, r.getModeller(), r.getProcess(), r.getMetric(), r.getComputedValue(), r.getActualValue()));
+                }
+
                 ModelResult r1 = mr.get(0);
-                /*if (("mysqld".equals(r1.getProcess())) && "% Processor Time".equals(r1.getMetric())) {*/
+                if (("Tomcat7".equals(r1.getProcess())) && "Private Bytes".equals(r1.getMetric())) {
                     System.out.println(new EnsembleTSVRow(resultNumber, "stacking", r1.getProcess(), r1.getMetric(), stacking, r1.getActualValue()));
                     System.out.println(new EnsembleTSVRow(resultNumber, "bagging", r1.getProcess(), r1.getMetric(), bagging, r1.getActualValue()));
                     System.out.println(new EnsembleTSVRow(resultNumber, "actual", r1.getProcess(), r1.getMetric(), r1.getActualValue(), r1.getActualValue()));
 
                     System.out.println();
-                //}
+                }
             }
 
 

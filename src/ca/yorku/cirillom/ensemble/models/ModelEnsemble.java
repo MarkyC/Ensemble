@@ -1,5 +1,8 @@
 package ca.yorku.cirillom.ensemble.models;
 
+import ca.yorku.cirillom.ensemble.modellers.IEnsembleModel;
+import ca.yorku.cirillom.ensemble.modellers.LinearRegressionModel;
+import ca.yorku.cirillom.ensemble.modellers.MovingAverageModel;
 import ca.yorku.cirillom.ensemble.preferences.Preferences;
 
 import java.beans.PropertyChangeEvent;

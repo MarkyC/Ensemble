@@ -1,7 +1,7 @@
 package ca.yorku.cirillom.ensemble.preferences;
 
-import ca.yorku.cirillom.ensemble.models.LinearRegressionModel;
-import ca.yorku.cirillom.ensemble.models.MovingAverageModel;
+import ca.yorku.cirillom.ensemble.modellers.LinearRegressionModel;
+import ca.yorku.cirillom.ensemble.modellers.MovingAverageModel;
 
 import java.io.*;
 import java.util.*;

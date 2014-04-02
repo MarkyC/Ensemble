@@ -1,5 +1,8 @@
-package ca.yorku.cirillom.ensemble.models;
+package ca.yorku.cirillom.ensemble.modellers;
 
+import ca.yorku.cirillom.ensemble.models.DataValue;
+import ca.yorku.cirillom.ensemble.models.Metric;
+import ca.yorku.cirillom.ensemble.models.ModelResult;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 import java.util.*;
