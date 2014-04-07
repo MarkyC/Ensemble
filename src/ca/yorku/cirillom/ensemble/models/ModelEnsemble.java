@@ -3,6 +3,7 @@ package ca.yorku.cirillom.ensemble.models;
 import ca.yorku.cirillom.ensemble.modellers.IEnsembleModel;
 import ca.yorku.cirillom.ensemble.modellers.LinearRegressionModel;
 import ca.yorku.cirillom.ensemble.modellers.MovingAverageModel;
+import ca.yorku.cirillom.ensemble.modellers.OperaModel;
 import ca.yorku.cirillom.ensemble.preferences.Preferences;
 
 import java.beans.PropertyChangeEvent;
@@ -68,6 +69,9 @@ public class ModelEnsemble extends Thread  {
                 models.add(getModelByName(modelName.trim()));
             } catch (ClassNotFoundException e) { /*  No need to fail if we're given one bad model... */ }
         }
+
+        // TODO: Hack to add OPERA
+        models.add(new OperaModel());
 
         if ( 1 > models.size() ) {
             throw new RuntimeException("No valid models to run.");

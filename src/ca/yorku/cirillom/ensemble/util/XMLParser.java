@@ -11,7 +11,6 @@ import org.w3c.dom.NodeList;
 
 import javax.swing.*;
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -45,7 +44,7 @@ public class XMLParser extends SwingWorker<PerformanceData, Integer> {
     public static final String PROGRESS = "progress";
 
     private final File file;
-    private List<PropertyChangeListener> listeners = new ArrayList<>();
+    //private List<PropertyChangeListener> listeners = new ArrayList<>();
 
     private PerformanceData result;
     public PerformanceData getResult() {
