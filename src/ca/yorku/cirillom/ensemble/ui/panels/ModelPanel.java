@@ -47,7 +47,6 @@ public class ModelPanel extends JPanel {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-
                 try {
                     ensemble = new ModelEnsemble(performanceData);
                     ensemble.addPropertyChangeListener(new PropertyChangeListener() {
@@ -124,7 +123,7 @@ public class ModelPanel extends JPanel {
         ensemblePanel.add(container);
 
         this.add(ensemblePanel, BorderLayout.CENTER);
-        this.add(queryPanel, BorderLayout.SOUTH);
+        //this.add(queryPanel, BorderLayout.SOUTH);
     }
 
     @Override

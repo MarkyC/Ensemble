@@ -3,6 +3,7 @@ package ca.yorku.cirillom.ensemble.modellers;
 import ca.yorku.cirillom.ensemble.models.DataValue;
 import ca.yorku.cirillom.ensemble.models.Metric;
 import ca.yorku.cirillom.ensemble.models.ModelResult;
+import ca.yorku.cirillom.ensemble.preferences.Preferences;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ public class MovingAverageModel implements IEnsembleModel {
 
     /* Constants */
     public static final int DEFAULT_WINDOW = 10;
+    public static final String WINDOW_PREFERENCE = "MovingAverageModel-window";
 
     /* Fields and Accessors */
 
@@ -32,6 +34,8 @@ public class MovingAverageModel implements IEnsembleModel {
         return window;
     }
     public void setWindow(int window) {
+
+        Preferences.getInstance().put(WINDOW_PREFERENCE, ""+window);
         this.window = window;
     }
 
@@ -56,7 +60,7 @@ public class MovingAverageModel implements IEnsembleModel {
         }
 
     }
-    @Override
+    //@Override
     public void addInput(List<DataValue> input) {
         for (DataValue v : input) {
             this.addInput(v);
@@ -76,12 +80,21 @@ public class MovingAverageModel implements IEnsembleModel {
     /* Constructor */
 
     public MovingAverageModel() {
-        this(DEFAULT_WINDOW);
-    }
 
-    public MovingAverageModel(int window) {
-        this.window = window;
-        input = new ArrayDeque<>();
+        // Grab the user's stored preference for the window size
+        String windowPref = Preferences.getInstance().get(WINDOW_PREFERENCE);
+
+        // Use the setter so the user's preference is saved
+        try {
+            this.setWindow(Integer.parseInt(windowPref));
+        } catch (Exception e) {
+            // Due to inconsistency in Java's API, parseInt throws only a NumberFormatEx
+            // parseDouble throws NullPointerEx if windowPref is null
+            // We catch Exception instead of NumberFormatEx here to be safe (perhaps Java fixes this one day!)
+            this.setWindow(DEFAULT_WINDOW);
+        }
+
+        this.input = new ArrayDeque<>();
     }
 
     /* Functions */
@@ -92,7 +105,7 @@ public class MovingAverageModel implements IEnsembleModel {
         }
     }
 
-    @Override
+    //@Override
     public List<ModelResult> model() {
 
         // Compute Results
@@ -137,7 +150,8 @@ public class MovingAverageModel implements IEnsembleModel {
         return results;
     }
 
-    public List<ModelResult> predict(int workload) {
+    public List<ModelResult> predict(DataValue value) {
+        int workload = value.getTotalWorkload();
 
         List<Double> predictions = new ArrayList<>();
 

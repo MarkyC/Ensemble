@@ -13,34 +13,42 @@ package ca.yorku.cirillom.ensemble.models;
  */
 public class Workload {
 
-    private String resource;
-    private int requests;
+    private final int responseTime;
+    private final String resource;
+    private final int requests;
 
-    public Workload(String resource, int requests) {
+    public Workload(String resource, int responseTime) {
+        this(resource, 1, responseTime);
+    }
+
+    public Workload(String resource, int requests, int responseTime) {
         this.resource = resource;
         this.requests = requests;
+        this.responseTime = responseTime;
+    }
+
+    public double getResponseTime() {
+        return responseTime;
     }
 
     public String getResource() {
         return resource;
     }
 
-    public void setResource(String resource) {
-        this.resource = resource;
-    }
-
     public int getRequests() {
         return requests;
     }
 
-    public void setRequests(int requests) {
-        this.requests = requests;
-    }
+    /*public double getRequestsPerSecond(Date start, Date end) {
+        double time = end.getTime() - start.getTime(); // in seconds; Not pretty, but works
+        return ((double) getRequests()/time);
+    }*/
 
     @Override
     public String toString() {
         return "Workload{" +
-                "resource='" + resource + '\'' +
+                "responseTime=" + responseTime +
+                ", resource='" + resource + '\'' +
                 ", requests=" + requests +
                 '}';
     }

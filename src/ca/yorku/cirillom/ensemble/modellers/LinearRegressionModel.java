@@ -59,7 +59,8 @@ public class LinearRegressionModel implements IEnsembleModel {
         this.lastInput = input;
 
     }
-    @Override
+
+    //@Override
     public void addInput(List<DataValue> input) {
         for (DataValue v : input) {
             this.addInput(v);
@@ -82,7 +83,7 @@ public class LinearRegressionModel implements IEnsembleModel {
 
     /* Functions */
 
-    @Override
+    //@Override
     public List<ModelResult> model() {
 
         // Create ModelResult Array based on computed results
@@ -111,7 +112,8 @@ public class LinearRegressionModel implements IEnsembleModel {
 
 
     @Override
-    public List<ModelResult> predict(int workload) {
+    public List<ModelResult> predict(DataValue value) {
+        int workload = value.getTotalWorkload();
 
         List<ModelResult> results = new ArrayList<>();
         DataValue latestDataValue = inputs.get(inputs.size() - 1);

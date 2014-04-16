@@ -1,6 +1,5 @@
 package ca.yorku.cirillom.ensemble;
 
-import ca.yorku.cirillom.ensemble.listeners.SaveOnQuitListener;
 import ca.yorku.cirillom.ensemble.ui.MainWindow;
 
 import javax.swing.*;
@@ -18,7 +17,6 @@ public class Ensemble {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 MainWindow window = new MainWindow();
-                window.addWindowListener(new SaveOnQuitListener());
                 window.show();
             }
         });

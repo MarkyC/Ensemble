@@ -1,7 +1,6 @@
 package ca.yorku.cirillom.ensemble.ui.panels;
 
 import ca.yorku.cirillom.ensemble.models.PerformanceData;
-import ca.yorku.cirillom.ensemble.ui.MainWindow;
 import ca.yorku.cirillom.ensemble.ui.util.ProgressWindow;
 import ca.yorku.cirillom.ensemble.util.InputFileFilter;
 import ca.yorku.cirillom.ensemble.util.Util;
@@ -27,12 +26,11 @@ public class InputPanel extends JPanel {
     public static final String SELECT_FILE = "Select an input file";
     public static final String BROWSE_FILE = "Browse...";
     public static final String NO_FILE = "No File Selected";
-    private final MainWindow parent;
+    public static final String FILE_LOADED = "fileloaded";
     PerformanceData performanceData;
 
-    public InputPanel(final MainWindow parent) {
+    public InputPanel() {
         super();
-        this.parent = parent;
         this.setBorder(Util.createBorder(TITLE));
 
         final JLabel fileLabel = new JLabel(NO_FILE);

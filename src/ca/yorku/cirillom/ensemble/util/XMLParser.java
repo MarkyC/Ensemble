@@ -84,19 +84,26 @@ public class XMLParser extends SwingWorker<PerformanceData, Integer> {
                 List<Workload> workloads= new ArrayList<>();
 
                 for (int j = 0; j < children.getLength(); j++) {
-                    Node child = children.item(j);
+
+                    Node child = children.item(j);                      // The Child Node
+                    NamedNodeMap attributes = child.getAttributes();    // It's attributes <Node attribute="textContent"
+
 
                     if ( METRIC.equals(child.getNodeName()) ) {
-                        NamedNodeMap attributes = child.getAttributes();
+
                         String name     = attributes.getNamedItem(NAME).getTextContent();
                         String process  = attributes.getNamedItem(PROCESS).getTextContent();
                         double value    = Double.parseDouble(child.getTextContent());
+
                         metrics.add(new Metric(name, process, value));
+
                     } else if (WORKLOAD.equals(child.getNodeName())) {
-                        NamedNodeMap attributes = child.getAttributes();
-                        String name     = attributes.getNamedItem(NAME).getTextContent();
-                        int requests    = Integer.parseInt(child.getTextContent());
-                        workloads.add(new Workload(name, requests));
+
+                        String  name         = attributes.getNamedItem(NAME).getTextContent();
+                        int     responseTime = Integer.parseInt(child.getTextContent());
+                        //double  responseTime = Double.parseDouble(attributes.getNamedItem("responseTime").getTextContent());
+
+                        workloads.add(new Workload(name, responseTime));
                     }
 
                     // update percent complete

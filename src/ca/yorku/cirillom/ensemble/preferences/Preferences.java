@@ -2,6 +2,7 @@ package ca.yorku.cirillom.ensemble.preferences;
 
 import ca.yorku.cirillom.ensemble.modellers.LinearRegressionModel;
 import ca.yorku.cirillom.ensemble.modellers.MovingAverageModel;
+import ca.yorku.cirillom.ensemble.modellers.OperaModel;
 
 import java.io.*;
 import java.util.*;
@@ -15,25 +16,30 @@ import java.util.*;
 
 public class Preferences {
 
-    /**
-     * Filename of the Preferences file
-     */
+    //Filename of the Preferences file
     public static final String FILENAME = "ensemble.properties";
 
-    /**
-     * Models preference field, controls which models are automatically loaded
-     */
-    public static final String ALL_MODELS = "all-models";
-    public static final String ENABLED_MODELS = "enabled-models";
+    //Separator for list fields in the properties file
+    public static final String SEPARATOR = ",";
 
-    public static final String MOVING_AVERAGE       = MovingAverageModel.class.getSimpleName();
-    public static final String LINEAR_REGRESSION    = LinearRegressionModel.class.getSimpleName();
+    // All Models we support
+    public static final String ALL_MODELS       = "all-models";
 
-    private static final String DEFAULT_MODELS = MOVING_AVERAGE + ", " + LINEAR_REGRESSION;
+    // Models that are enabled (that will run)
+    public static final String ENABLED_MODELS   = "enabled-models";
+
+    /* Our Models*/
+    public static final String MOVING_AVERAGE   = MovingAverageModel.class.getSimpleName();
+    public static final String LINEAR_REGRESSION= LinearRegressionModel.class.getSimpleName();
+    public static final String OPERA            = OperaModel.class.getSimpleName();
+
+    // Moving Average and Linear Regression enabled by default (for new users)
+    private static final String DEFAULT_MODELS = MOVING_AVERAGE + SEPARATOR + LINEAR_REGRESSION;
 
     // Encapsulated Properties class
     private Properties prop = new Properties();
 
+    // Singleton instance
     private static Preferences ourInstance = new Preferences();
 
     public static Preferences getInstance() {
@@ -108,7 +114,10 @@ public class Preferences {
      * @param value - Value
      */
     public synchronized String put(String key, String value) {
-        return (String) prop.put(key, value);
+
+        String result = (String) prop.put(key, value);
+        save();
+        return result;
     }
 
     /**
@@ -119,11 +128,11 @@ public class Preferences {
     public String put(String key, Set<String> values) {
         String value = "";
         for (String v : values) {
-            value += v + ", ";
+            value += v + SEPARATOR;
         }
 
-        // get rid of last comma and space
-        if (value.length() > 2) value = value.substring(0, value.length() - 2);
+        // get rid of last comma
+        if (value.length() > 1) value = value.substring(0, value.length() - 1);
 
         // get rid of leading comma
         if ( (value.length() > 0) && (value.charAt(0) == ',') ) value = value.substring(1);
@@ -154,10 +163,10 @@ public class Preferences {
         return prop.get(key).toString().trim();
     }
     public String[] getAsArray(String key) {
-        return get(key).split(", ");
+        return get(key).split(SEPARATOR);
     }
     public List<String> getAsList(String key) {
-        return Arrays.asList(get(key).split(", "));
+        return Arrays.asList(get(key).split(SEPARATOR));
     }
     public Set<String> getAsSet(String key) {
         return new HashSet<>(getAsList(key));

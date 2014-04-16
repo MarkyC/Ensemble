@@ -1,7 +1,6 @@
 package ca.yorku.cirillom.ensemble.ui.panels;
 
 import ca.yorku.cirillom.ensemble.models.ModelResult;
-import ca.yorku.cirillom.ensemble.ui.MainWindow;
 import ca.yorku.cirillom.ensemble.util.Util;
 
 import javax.swing.*;
@@ -20,13 +19,11 @@ public class ResultPanel extends JPanel {
     public static final String TITLE = "Results";
 
     public static final String NO_FILE = "Please select a file first";
-    private final MainWindow parent;
 
     JTable table/* = new JTable()*/;
 
-    public ResultPanel(final MainWindow parent) {
+    public ResultPanel() {
         super();
-        this.parent = parent;
         this.setBorder(Util.createBorder(TITLE));
         this.setLayout(new BorderLayout());
 

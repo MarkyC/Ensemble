@@ -41,9 +41,15 @@ public class DataValue {
      * @return the total workload (sum of all requests)
      */
     public int getTotalWorkload() {
-        int workload = 0;
-        for (Workload w : workloads) workload += w.getRequests();
-        return workload;
+        return getWorkloads().size();
+    }
+
+    /**
+     *
+     * @return A list of all the pages requested between this DataValue's start and end times
+     */
+    public List<Workload> getWorkloads() {
+        return workloads;
     }
 
     /**
@@ -67,6 +73,18 @@ public class DataValue {
         return metrics;
     }
 
+    public Metric getMetricByNameAndProcess(String name, String process) {
+        Metric m = null;
+
+        for (Metric metric : metrics) {
+            if (name.equals(metric.getName()) && process.equals(metric.getProcess())) {
+                m = metric;
+            }
+        }
+
+        return m;
+    }
+
     /**
      * Adds a Metric m to the list of Metrics
      * @param m The Metric to add
@@ -74,6 +92,16 @@ public class DataValue {
      */
     public boolean addMetric(Metric m) {
         return metrics.add(m);
+    }
+
+    public double getRequestsPerSecond(String workloadName) {
+        double requests = 0;
+        for (Workload w : getWorkloads()) {
+            if (workloadName.equalsIgnoreCase(w.getResource())) requests++;
+        }
+
+        double time = endTime.getTime() - startTime.getTime(); // in milliseconds
+        return requests / (time * 1000); // number of requests over the time interval (converted to seconds)
     }
 
     @Override

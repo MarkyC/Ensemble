@@ -12,6 +12,7 @@ import java.awt.event.WindowListener;
  *
  * Saves User Preferences on Window Closing
  */
+@Deprecated
 public class SaveOnQuitListener implements WindowListener {
 
     /**

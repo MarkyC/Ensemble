@@ -22,7 +22,7 @@ public interface IEnsembleModel {
      * Adds a List of DataValue's into this Modeller
      * @param input the DataValue to addInput
      */
-    public void addInput(List<DataValue> input);
+    //public void addInput(List<DataValue> input);
 
     /**
      * Returns the latest added DataValue's value
@@ -34,7 +34,7 @@ public interface IEnsembleModel {
      * Runs this modeller on the set of all DataValues
      * @return the latest computed result
      */
-    public List<ModelResult> model();
+    //public List<ModelResult> model();
 
     /**
      * Returns the latest computed result
@@ -44,10 +44,10 @@ public interface IEnsembleModel {
 
     /**
      * Attempts to predict the resource usage based on the given workload
-     * @param workload - the workload (number of users)
+     * @param dataValue - the datavalue to pull workloads (number of users) from
      * @return A List of ModelResults, one for each metric
      */
-    public List<ModelResult> predict(int workload);
+    public List<ModelResult> predict(DataValue dataValue);
 
     /**
      * Returns the second latest computed result. This is separate from getNextPrediction() because this result

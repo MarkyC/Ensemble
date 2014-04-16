@@ -30,36 +30,29 @@ public class MainWindow implements PropertyChangeListener {
     public static final String TITLE = "Ensemble Model Solver";
 
     private JFrame frame;
-    private InputPanel inputPanel;
-    private ModelPanel modelPanel;
-    private ResultPanel resultPanel;
+    private InputPanel inputPanel = new InputPanel();
+    private ModelPanel modelPanel = new ModelPanel();
+    private ResultPanel resultPanel = new ResultPanel();
 
     private EnsembleTSVWriter output = new EnsembleTSVWriter();
 
     public MainWindow() {
-        init();
-    }
 
-    private void init() {
         // Initialize Window
         frame = new JFrame(TITLE);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
+        // Add this window as a listener for it's child panels
+        inputPanel.addPropertyChangeListener(this);
+        modelPanel.addPropertyChangeListener(this);
+        resultPanel.addPropertyChangeListener(this);
+
         // Create supporting panels
         JPanel centerPanel = new JPanel();
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
-
-        inputPanel = new InputPanel(this);
-        inputPanel.addPropertyChangeListener(this);
         centerPanel.add(inputPanel);
-
-        modelPanel = new ModelPanel();
-        modelPanel.addPropertyChangeListener(this);
         centerPanel.add(modelPanel);
-
-        resultPanel = new ResultPanel(this);
-        resultPanel.addPropertyChangeListener(this);
-        centerPanel.add(resultPanel);
+        //centerPanel.add(resultPanel);
 
         // Add panels to the JFrame's contentPane
         Container c = frame.getContentPane();
@@ -77,7 +70,7 @@ public class MainWindow implements PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent event) {
-        if ("fileLoaded".equalsIgnoreCase(event.getPropertyName())) {
+        if (InputPanel.FILE_LOADED.equalsIgnoreCase(event.getPropertyName())) {
             PerformanceData result = inputPanel.getPerformanceData();
             modelPanel.setPerformanceData(result);
             modelPanel.setEnabled(true);
