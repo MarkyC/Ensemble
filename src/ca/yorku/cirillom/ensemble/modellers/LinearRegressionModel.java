@@ -60,16 +60,6 @@ public class LinearRegressionModel implements IEnsembleModel {
 
     }
 
-    //@Override
-    public void addInput(List<DataValue> input) {
-        for (DataValue v : input) {
-            this.addInput(v);
-        }
-    }
-    /*public ArrayDeque<DataValue> getInput() {
-        return input;
-    }*/
-
     private volatile DataValue lastInput = null;
     @Override
     public DataValue getLastInput() throws NullPointerException {
@@ -82,34 +72,6 @@ public class LinearRegressionModel implements IEnsembleModel {
     }
 
     /* Functions */
-
-    //@Override
-    public List<ModelResult> model() {
-
-        // Create ModelResult Array based on computed results
-        List<ModelResult> results = new ArrayList<>();
-        DataValue latestDataValue = inputs.get(inputs.size() - 1);
-        List<Metric> metrics = latestDataValue.getMetrics();
-        for (int i = 0; i < metrics.size(); i++) {
-            Metric metric = metrics.get(i);
-
-            double computedResult = regressions.get(i).predict(latestDataValue.getTotalWorkload());
-
-            // Create results
-            results.add(new ModelResult(
-                    metric.getProcess(),
-                    metric.getName(),
-                    latestDataValue.getTotalWorkload(),
-                    metric.getValue(),
-                    computedResult,
-                    regressions.get(i).getMeanSquareError()
-            ));
-        }
-
-        setResults(results);
-        return results;
-    }
-
 
     @Override
     public List<ModelResult> predict(DataValue value) {
@@ -144,43 +106,4 @@ public class LinearRegressionModel implements IEnsembleModel {
         return results;
     }
 
-    private List<Map<Integer, Double>> getActualValues(List<DataValue> inputs) {
-
-        List<Map<Integer, Double>> results = new ArrayList<>(inputs.size());
-
-        for (DataValue input : inputs) {
-            List<Metric> metrics = input.getMetrics();
-            for (int i = 0; i < metrics.size(); i++) {
-
-                Map<Integer, Double> actuals = null;
-                try {
-                    actuals = results.get(i);
-                } catch (IndexOutOfBoundsException e) {
-                    actuals = new LinkedHashMap<>();
-                }
-
-                actuals.put(input.getTotalWorkload(), metrics.get(i).getValue());
-                results.add(i, actuals);
-
-            }
-        }
-
-        return results;
-    }
-
-
-   /* @Override
-    public double getError() {
-
-        return input.getMeanSquareError();
-
-    }*/
-
-    private List<SimpleRegression> createFilledListOfRegression(int size) {
-        List<SimpleRegression> result = new ArrayList<>(size);
-        for (int i = 0; i < size; i++) {
-            result.add(new SimpleRegression());
-        }
-        return result;
-    }
 }

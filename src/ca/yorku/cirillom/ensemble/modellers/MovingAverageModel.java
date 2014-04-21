@@ -60,19 +60,10 @@ public class MovingAverageModel implements IEnsembleModel {
         }
 
     }
-    //@Override
-    public void addInput(List<DataValue> input) {
-        for (DataValue v : input) {
-            this.addInput(v);
-        }
-    }
-    @Override
-    public DataValue getLastInput() throws NullPointerException {
-        synchronized (input) {
-            if ( 0 == input.size() ) {
-                throw new NullPointerException("No Last Input");
-            }
 
+    @Override
+    public DataValue getLastInput() {
+        synchronized (input) {
             return input.peekLast();
         }
     }

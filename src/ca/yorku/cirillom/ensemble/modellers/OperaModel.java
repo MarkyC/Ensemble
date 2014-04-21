@@ -23,11 +23,10 @@ import java.util.Map;
  */
 public class OperaModel implements IEnsembleModel {
 
-    //public static final String PXL_FILE     = "C:\\Users\\Marco\\Desktop\\performance logs\\aril8\\opera sample.pxl";
-    //public static final String CONFIG_FILE  = "C:\\Users\\Marco\\Desktop\\performance logs\\aril8\\opera kalman.config";
     public static final String PROCESSOR_TIME = "% Processor Time";
 
-    private DataValue lastInput;
+    private DataValue lastInput = null;
+    private List<ModelResult> lastOutput = new ArrayList<>();
 
     private final opera.OperaModel model = new opera.OperaModel();
     private final KalmanEstimator estimator;
@@ -43,6 +42,7 @@ public class OperaModel implements IEnsembleModel {
      * ie: PROCESSES[0]=mysqld => NODES[0]=WebHost means mysqld runs on WebHost
      */
     private static final List<String> NODES     = Preferences.getInstance().getAsList( "OperaModel-nodes" );
+
 
     public OperaModel() {
 
@@ -116,15 +116,17 @@ public class OperaModel implements IEnsembleModel {
     }
 
     @Override
-    public DataValue getLastInput() throws NullPointerException {
-
-        if (null == this.lastInput) throw new NullPointerException("Last Inputted DataValue is null");
+    public DataValue getLastInput(){
         return this.lastInput;
     }
 
     @Override
     public List<ModelResult> getResults() {
-        return null;
+        return this.lastOutput;
+    }
+
+    private void setResults(List<ModelResult> results) {
+        this.lastOutput = results;
     }
 
     private EstimationResults calibrate(DataValue value) {
@@ -153,6 +155,8 @@ public class OperaModel implements IEnsembleModel {
             double cpu = model.GetUtilizationNode(NODES.get(i), "CPU");
             results.add(new ModelResult(PROCESSES.get(i), PROCESSOR_TIME, getLastInput().getTotalWorkload(), 0, cpu, 100));
         }
+
+        this.setResults(results);
 
         return results;
     }
@@ -246,27 +250,5 @@ public class OperaModel implements IEnsembleModel {
             throw new IllegalStateException("Unable to get Requests from scenarios: " + SCENARIOS.toString());
         }
         return result;
-    }
-
-    /*   CpuUtil_Db       5.21251       0.00000        100.00       0.00000        100.00| */
-    private static String getDBCPU(String[] lines) {
-        for (String rawLine : lines) {
-            String line = rawLine.trim().replaceAll(" +", " ");
-            if (line.contains("CpuUtil_Db")) {
-                return line.split(" ")[2];
-            }
-        }
-        return "";
-    }
-
-    /*   CpuUtil_Web       3.85726       0.00006        100.00       0.00010        100.00| */
-    private static String getWebCPU(String[] lines) {
-        for (String rawLine : lines) {
-            String line = rawLine.trim().replaceAll(" +", " ");
-            if (line.contains("CpuUtil_Web")) {
-                return line.split(" ")[2];
-            }
-        }
-        return "";
     }
 }
