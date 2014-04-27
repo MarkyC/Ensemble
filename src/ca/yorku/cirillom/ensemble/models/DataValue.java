@@ -97,11 +97,13 @@ public class DataValue {
     public double getRequestsPerSecond(String workloadName) {
         double requests = 0;
         for (Workload w : getWorkloads()) {
-            if (workloadName.equalsIgnoreCase(w.getResource())) requests++;
+            if (workloadName.equalsIgnoreCase(w.getResource())) {
+                requests++;
+            }
         }
 
         double time = endTime.getTime() - startTime.getTime(); // in milliseconds
-        return requests / (time * 1000); // number of requests over the time interval (converted to seconds)
+        return requests / (time / 1000); // number of requests over the time interval (converted to seconds)
     }
 
     @Override

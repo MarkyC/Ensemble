@@ -19,7 +19,7 @@ public class InputFileFilter extends FileFilter {
     /**
      * Tab Separated Values file extension (*.tsv)
      */
-    public static final String TSV = "tsv";
+    public static final String XML = "xml";
 
     public boolean accept(File f) {
 
@@ -32,11 +32,11 @@ public class InputFileFilter extends FileFilter {
         String extension = Util.getExtension(f);
 
         // Accept the following extensions
-        return extension.equals(TSV);
+        return extension.equals(XML);
     }
 
     //The description of this filter
     public String getDescription() {
-        return "Tab Separated Values (*.tsv)";
+        return "eXtensible Markup Language (*.xml)";
     }
 }

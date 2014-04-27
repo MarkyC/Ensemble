@@ -2,6 +2,10 @@ package ca.yorku.cirillom.ensemble.util;
 
 import ca.yorku.cirillom.ensemble.models.ModelResult;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -21,6 +25,8 @@ public class EnsembleTSVWriter {
 
     List<ModelResult> results = new ArrayList<>();
 
+    public static final String PROCESSOR_TIME = "% Processor Time";
+
     public void addModelResults(List<ModelResult> results) {
         for (ModelResult result : results) {
             //rows.add(new EnsembleTSVRow(result));
@@ -33,6 +39,8 @@ public class EnsembleTSVWriter {
     }
 
     public void write() {
+
+        List<String> output = new ArrayList<>();
 
         // Iterate through each Process/Metric
         Map<String, List<ModelResult>> theRows = splitByProcesMetric(results);
@@ -47,58 +55,46 @@ public class EnsembleTSVWriter {
                 Integer resultNumber                        = next.getKey();
                 List<ModelResult> mr                        = next.getValue();
 
-                //System.out.println(mr.size());
-                //for (ModelResult r : mr) System.out.println(r);
-
                 double totalAccuracy = 0;
                 for (ModelResult r : mr) {
                     totalAccuracy += 1 - accuracy(r.getActualValue(), r.getComputedValue());
-                    //System.out.println(r.getComputedValue()+ " " + r.getActualValue()+ " " + " " + accuracy(r.getActualValue(), r.getComputedValue()) + " " +(1 - accuracy(r.getActualValue(), r.getComputedValue()))+ " " +totalAccuracy);
                 }
 
                 double bagging = 0;
                 double stacking = 0;
                 for (ModelResult r : mr) {
-                    /*if (("Tomcat7".equals(r.getProcess())) && "Private Bytes".equals(r.getMetric())) {
-                        System.out.println(r.getModeller() + " Computed=" + r.getComputedValue() + ", Actual=" + r.getActualValue());
-                        System.out.println("bagging = 0.5 * " + r.getComputedValue() + " = " + 0.5 * r.getComputedValue());
-                        System.out.println("stacking = ((1-" +
-                                accuracy(r.getActualValue(), r.getComputedValue()) + ")/" + totalAccuracy + ") * " +
-                                r.getComputedValue() + " = " +
-                                ((( 1 - accuracy(r.getActualValue(), r.getComputedValue()) ) / totalAccuracy)
-                                        * r.getComputedValue()));
-                    }*/
+                    if (PROCESSOR_TIME.equals(r.getMetric())) {
+                        bagging += r.getComputedValue() / 3.0;
+                    } else {
+                        bagging += 0.5 * r.getComputedValue();
+                    }
 
-                    bagging += 0.5 * r.getComputedValue();
                     stacking+= (( 1 - accuracy(r.getActualValue(), r.getComputedValue()) ) / totalAccuracy)
                                          * r.getComputedValue();
                 }
 
                 // Calculate individual model results
                 for (ModelResult r : mr) {
-                    System.out.println(new EnsembleTSVRow(resultNumber, r.getModeller(), r.getProcess(), r.getMetric(), r.getComputedValue(), r.getActualValue()));
+                    output.add(new EnsembleTSVRow(resultNumber, r.getModeller(), r.getProcess(), r.getMetric(), r.getComputedValue(), r.getActualValue()).toString());
                 }
 
                 ModelResult r1 = mr.get(0);
-                //if (("Tomcat7".equals(r1.getProcess())) && "Private Bytes".equals(r1.getMetric())) {
-                    System.out.println(new EnsembleTSVRow(resultNumber, "stacking", r1.getProcess(), r1.getMetric(), stacking, r1.getActualValue()));
-                    System.out.println(new EnsembleTSVRow(resultNumber, "bagging", r1.getProcess(), r1.getMetric(), bagging, r1.getActualValue()));
-                    System.out.println(new EnsembleTSVRow(resultNumber, "actual", r1.getProcess(), r1.getMetric(), r1.getActualValue(), r1.getActualValue()));
+                output.add(new EnsembleTSVRow(resultNumber, "stacking", r1.getProcess(), r1.getMetric(), stacking, r1.getActualValue()).toString());
+                output.add(new EnsembleTSVRow(resultNumber, "bagging", r1.getProcess(), r1.getMetric(), bagging, r1.getActualValue()).toString());
+                output.add(new EnsembleTSVRow(resultNumber, "actual", r1.getProcess(), r1.getMetric(), r1.getActualValue(), r1.getActualValue()).toString());
 
-                    System.out.println();
-                //}
             }
-
-
         }
 
-/*        Collections.sort(rows);
-
-        computeBagging(rows);
-
-        for (EnsembleTSVRow row : rows) {
-            System.out.println(row);
-        }*/
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(new File("output.tsv")))) {
+            for (String line : output) {
+                bw.write(line);
+            }
+        } catch (IOException e) {
+            // Failed to write the file! Maybe the disk is full or broken
+            System.out.println("Failed to write file");
+            e.printStackTrace();
+        }
     }
 
     private static double accuracy(double actual, double predicted) {

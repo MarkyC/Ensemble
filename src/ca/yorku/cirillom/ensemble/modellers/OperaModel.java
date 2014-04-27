@@ -91,7 +91,7 @@ public class OperaModel implements IEnsembleModel {
 
         setPopulations(input);
         calibrate(input);
-        System.out.println("solved");
+        System.out.println("Added input");
     }
 
     private void setPopulations(DataValue value) {
@@ -144,7 +144,7 @@ public class OperaModel implements IEnsembleModel {
 
     @Override
     public List<ModelResult> predict(DataValue value) {
-        System.out.println("predicting");
+        System.out.println("modelled input");
 
         setPopulations(value);
         model.solve();
@@ -205,14 +205,10 @@ public class OperaModel implements IEnsembleModel {
             for (Metric m : metrics) {
                 if (PROCESSOR_TIME.equals(m.getName())) {
                     if (p.equals(m.getProcess())) {
-                        result.put(p, m.getValue());
+                        result.put(p, m.getValue()/100.0);
                     }
                 }
             }
-        }
-
-        if (0 == result.size()) {
-            throw new IllegalStateException("Unable to get Measured Metrics from processes: " + PROCESSES.toString());
         }
         return result;
     }
@@ -228,10 +224,6 @@ public class OperaModel implements IEnsembleModel {
                 }
             }
         }
-
-        if (0 == result.size()) {
-            throw new IllegalStateException("Unable to get Response Times from scenarios: " + SCENARIOS.toString());
-        }
         return result;
     }
 
@@ -244,10 +236,6 @@ public class OperaModel implements IEnsembleModel {
                     result.put(s, value.getRequestsPerSecond(w.getResource()));
                 }
             }
-        }
-
-        if (0 == result.size()) {
-            throw new IllegalStateException("Unable to get Requests from scenarios: " + SCENARIOS.toString());
         }
         return result;
     }
